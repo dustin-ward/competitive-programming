@@ -1,0 +1,6 @@
+ICPCGameAI2020/IcpcContestantAll/IcpcContestantAll/ICPC/*
+!ICPCGameAI2020/IcpcContestantAll/IcpcContestantAll/ICPC/py
+library/
+*.vscode
+matrixGenerator.cpp
+setupcustom.py
