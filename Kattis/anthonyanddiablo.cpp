@@ -24,23 +24,8 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
 
-    string N,M; cin>>N>>M;
-    int dif = M.length() - N.length();
-    if(dif > 0)
-        N.insert(0,dif,'0');
-    
-    dif = N.length()-M.length();
-    N.insert(dif+1, ".");
-
-    int count = 0;
-    int pos=N.length()-1;
-    while(N[pos--] == '0')
-        count++;
-    N = N.substr(0, N.length()-count);
-
-    if(N[N.length()-1] == '.')
-        N = N.substr(0, N.length()-1);
-
-    cout<<N<<endl;
-    // cout<<M<<endl;
+    double pi = acos(-1.0);
+    double A,N; cin>>A>>N;
+    double tempA = pi * (N/(2*pi))*(N/(2*pi));
+    cout<<((tempA >= A) ? "Diablo is happy!" : "Need more materials!")<<endl;
 }

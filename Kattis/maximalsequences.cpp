@@ -21,26 +21,65 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+vi A;
+unordered_set<int> segTree[300001];
+
+void build(int root, int left, int right) {
+    if(left == right) {
+        segTree[root].insert(A[left]);
+        return;
+    }
+    if(left > right) return;
+
+    int mid = (left+right)/2;
+    int leftRoot = 2*root+1;
+    int rightRoot = 2*root+2;
+    build(leftRoot, left, mid);
+    build(rightRoot, mid+1, right);
+    set_union(segTree[leftRoot].begin(), segTree[leftRoot].end(),
+              segTree[rightRoot].begin(), segTree[rightRoot].end(),
+              inserter(segTree[root], segTree[root].end()));
+}
+
+int query(int root, int left, int right, int i, const unordered_set<int> &s) {
+    if(left > right) return 0;
+    if(left == right) return s.count(A[left]) >= 1;
+
+    if(includes(s.begin(), s.end(), segTree[root].begin(), segTree[root].end()))
+        return right - i + 1;
+
+    int count;
+    int mid = (left+right)/2;
+    int leftRoot = 2*root+1;
+    int rightRoot = 2*root+2;
+    if(i <= mid) {
+        count = query(leftRoot, left, mid, i, s);
+        if(count == mid - i + 1)
+            count += query(rightRoot, mid+1, right, mid+1, s);
+    }
+    else
+        count = query(rightRoot, mid+1, right, i, s);
+    return count;
+}
+
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
 
-    string N,M; cin>>N>>M;
-    int dif = M.length() - N.length();
-    if(dif > 0)
-        N.insert(0,dif,'0');
-    
-    dif = N.length()-M.length();
-    N.insert(dif+1, ".");
+    int N; cin>>N;
+    A.resize(N);
+    for(int &i:A)
+        cin>>i;
 
-    int count = 0;
-    int pos=N.length()-1;
-    while(N[pos--] == '0')
-        count++;
-    N = N.substr(0, N.length()-count);
+    build(0, 0, N-1);
 
-    if(N[N.length()-1] == '.')
-        N = N.substr(0, N.length()-1);
-
-    cout<<N<<endl;
-    // cout<<M<<endl;
+    int Q; cin>>Q;
+    while(Q--) {
+        int I,M; cin>>I>>M;
+        unordered_set<int> S;
+        while(M--) {
+            int temp; cin>>temp;
+            S.insert(temp);
+        }
+        cout<<query(0, 0, N-1, I-1, S)<<endl;
+    }
 }

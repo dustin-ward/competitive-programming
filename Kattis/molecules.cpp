@@ -21,26 +21,49 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+struct Point {
+    double x;
+    double y;
+};
+
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
 
-    string N,M; cin>>N>>M;
-    int dif = M.length() - N.length();
-    if(dif > 0)
-        N.insert(0,dif,'0');
-    
-    dif = N.length()-M.length();
-    N.insert(dif+1, ".");
+    int n,m; cin>>n>>m;
+    vector<vi> G(n);
+    vector<Point> A(n), B(n);
+    vector<bool> fix(n, 1);
+    for(int i=0; i<n; i++) {
+        double x,y; cin>>x>>y;
+        if(x == -1 && y == -1)
+            fix[i] = 0;
+        A[i] = Point{x,y};
+    }
 
-    int count = 0;
-    int pos=N.length()-1;
-    while(N[pos--] == '0')
-        count++;
-    N = N.substr(0, N.length()-count);
+    for(int i=0; i<m; i++) {
+        int u,v; cin>>u>>v;
+        G[u-1].push_back(v-1);
+        G[v-1].push_back(u-1);
+    }
 
-    if(N[N.length()-1] == '.')
-        N = N.substr(0, N.length()-1);
+    for(int x=0; x<50000; x++) {
+        for(int i=0; i<n; i++) {
+            if(fix[i])
+                B[i] = A[i];
+            else {
+                Point temp{0.0, 0.0};
+                for(int j:G[i]) {
+                    temp.x += A[j].x;
+                    temp.y += A[j].y;
+                }
+                B[i].x = 0.5*A[i].x + 0.5*temp.x/G[i].size();
+                B[i].y = 0.5*A[i].y + 0.5*temp.y/G[i].size();
+            }
+        }
+        for(int j=0; j<n; j++)
+            A[j] = B[j];
+    }
 
-    cout<<N<<endl;
-    // cout<<M<<endl;
+    for(int i=0; i<n; i++)
+        cout<<fixed<<setprecision(14)<<A[i].x<<" "<<A[i].y<<endl;
 }

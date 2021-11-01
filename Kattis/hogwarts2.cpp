@@ -24,23 +24,14 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
 
-    string N,M; cin>>N>>M;
-    int dif = M.length() - N.length();
-    if(dif > 0)
-        N.insert(0,dif,'0');
-    
-    dif = N.length()-M.length();
-    N.insert(dif+1, ".");
-
-    int count = 0;
-    int pos=N.length()-1;
-    while(N[pos--] == '0')
-        count++;
-    N = N.substr(0, N.length()-count);
-
-    if(N[N.length()-1] == '.')
-        N = N.substr(0, N.length()-1);
-
-    cout<<N<<endl;
-    // cout<<M<<endl;
+    int N; cin>>N;
+    vector<vi> A(N, vi(N)), B(N, vi(N));
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<N; j++)
+            cin>>A[i][j];
+    }
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<N; j++)
+            cin>>B[i][j];
+    }
 }

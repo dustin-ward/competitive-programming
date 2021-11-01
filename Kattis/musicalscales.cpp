@@ -21,26 +21,40 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+vector<string> notes = {"A", "A#", "B", "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#"};
+vector<int> scale = {2, 2, 1, 2, 2, 2};
+
 int main() {
     ios::sync_with_stdio(0); cin.tie(0);
 
-    string N,M; cin>>N>>M;
-    int dif = M.length() - N.length();
-    if(dif > 0)
-        N.insert(0,dif,'0');
-    
-    dif = N.length()-M.length();
-    N.insert(dif+1, ".");
+    int N; cin>>N;
+    vector<string> song(N);
+    for(int i=0; i<N; i++)  
+        cin>>song[i];
 
-    int count = 0;
-    int pos=N.length()-1;
-    while(N[pos--] == '0')
-        count++;
-    N = N.substr(0, N.length()-count);
-
-    if(N[N.length()-1] == '.')
-        N = N.substr(0, N.length()-1);
-
-    cout<<N<<endl;
-    // cout<<M<<endl;
+    bool none = true;
+    for(int s=0; s<12; s++) {
+        set<string> S;
+        int pos = s;
+        S.insert(notes[s]);
+        for(int i=0; i<6; i++) {
+            pos = (pos + scale[i]) % 12;
+            S.insert(notes[pos]);
+        }
+        
+        bool good = true;
+        for(string x:song) {
+            if(S.find(x) == S.end()) {
+                good = false;
+                break;
+            }
+        }
+        if(good) {
+            none = false;
+            cout<<notes[s]<<" ";
+        }
+    }
+    if(none)
+        cout<<"none";
+    cout<<endl;
 }
