@@ -4,3 +4,4 @@ library/
 *.vscode
 matrixGenerator.cpp
 setupcustom.py
+printMain.cpp
