@@ -1,3 +1,8 @@
+*
+!/**/
+!*.*
+
+
 ICPCGameAI2020/IcpcContestantAll/IcpcContestantAll/ICPC/*
 !ICPCGameAI2020/IcpcContestantAll/IcpcContestantAll/ICPC/py
 library/
@@ -5,3 +10,6 @@ library/
 matrixGenerator.cpp
 setupcustom.py
 printMain.cpp
+bf/
+Library/
+.ccls-cache/

@@ -1,9 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"sort"
 )
+
+var reader *bufio.Reader = bufio.NewReader(os.Stdin)
+var writer *bufio.Writer = bufio.NewWriter(os.Stdout)
+
+func printf(f string, a ...interface{}) { fmt.Fprintf(writer, f, a...) }
+func scanf(f string, a ...interface{})  { fmt.Fscanf(reader, f, a...) }
 
 type UnionFind struct {
 	howMany int
@@ -57,13 +65,15 @@ type edge struct {
 }
 
 func main() {
+	defer writer.Flush()
+
 	var n, m int
-	fmt.Scanf("%d %d", &n, &m)
+	scanf("%d %d\n", &n, &m)
 	for n != 0 {
 		edges := make([]*edge, m)
 		for i := 0; i < m; i++ {
 			var u, v, w int
-			fmt.Scanf("%d %d %d", &u, &v, &w)
+			scanf("%d %d %d\n", &u, &v, &w)
 			if u > v {
 				u, v = v, u
 			}
@@ -92,8 +102,8 @@ func main() {
 			}
 		}
 		if !possible {
-			fmt.Println("Impossible")
-			fmt.Scanf("%d %d", &n, &m)
+			printf("Impossible\n")
+			scanf("%d %d\n", &n, &m)
 			continue
 		}
 
@@ -107,11 +117,11 @@ func main() {
 			}
 		})
 
-		fmt.Println(ans)
+		printf("%d\n", ans)
 		for _, e := range mst {
-			fmt.Println(e.u, e.v)
+			printf("%d %d\n", e.u, e.v)
 		}
 
-		fmt.Scanf("%d %d", &n, &m)
+		scanf("%d %d\n", &n, &m)
 	}
 }
