@@ -14,6 +14,7 @@ typedef vector<int> vi;
 #define all(X) begin(X), end(X)
 #define rall(X) rbegin(X), rend(X)
 
+const double PI = acos(-1);
 double time() { return double(clock()) / CLOCKS_PER_SEC; }
 
 template<typename T, typename U> ostream& operator<<(ostream& o, const pair<T, U>& x) { o << "(" << x.fst << ", " << x.snd << ")"; return o; }
