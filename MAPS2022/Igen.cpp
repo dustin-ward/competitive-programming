@@ -216,16 +216,16 @@ ostream& operator<< (ostream &os, const Date &d) {
 }
 
 int main() {
-	int Y; cin>>Y;
-
-	Date M(Y,5,1), F(Y,6,1);
+	for(int Y=2000; Y<=3000; ++Y) {
+		Date M(Y,5,1), F(Y,6,1);
 	
-	int d = M.dayOfWeek();
-	M.addDay((d) ? (7-d)+7 : 7);
+		int d = M.dayOfWeek();
+		M.addDay((d) ? (7-d)+7 : 7);
 
-	d = F.dayOfWeek();
-	F.addDay((d) ? (7-d)+14 : 14);
+		d = F.dayOfWeek();
+		F.addDay((d) ? (7-d)+14 : 14);
 	
-	M.addDay(5*7);
-	cout<<((M==F)?"5 weeks":"6 weeks")<<endl;
+		M.addDay(5*7);
+		cout<<"{"<<Y<<","<<((M==F)?"\"5 weeks\"},":"\"6 weeks\"},")<<endl;
+	}
 }
