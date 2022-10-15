@@ -37,6 +37,11 @@ struct Point {
   bool operator<(const Point &p) const { return y < p.y || (y == p.y && x < p.x); }
 };
 
+ostream& operator<<(ostream& os, const Point& p){
+    os << p.x << ' ' << p.y;
+    return os;
+}
+
 Point operator-(Point p,Point q){ p.x -= q.x; p.y -= q.y; return p; }
 Point operator+(Point p,Point q){ p.x += q.x; p.y += q.y; return p; }
 Point operator*(double r,Point p){ p.x *= r; p.y *= r; return p; }
@@ -64,7 +69,7 @@ Orientation ccw(Point a, Point b, Point c) { //
 
 //------------------------------------------------------------------------------
 // Signed Area of Polygon
-double area_polygon(Point p[], int n) {
+double area_polygon(vector<Point> &p, int n) {
   double sum = 0.0;
   for (int i = 0; i < n; i++)  sum += cross(p[i],p[(i+1)%n]);
   return sum/2.0;
@@ -133,12 +138,23 @@ int intersect_line(Point a, Point b, Point c, Point d, Point &p,bool segment) {
 struct line {
 	Point a;
 	Point b;
+
+	void sort() {
+		if(b.x < a.x)
+			swap(a,b);
+		else if(b.x == a.x && b.y < a.y)
+			swap(a,b);
+	}
 };
 
 line perpendicular_bisector(Point &p1, Point &p2) {
 	Point mid = {(p1.x+p2.x)/2, (p1.y+p2.y)/2};
-	double m = -1/((p2.y-p1.y)/(p2.x-p1.x));
-	Point mid2 = {mid.x+1, m+mid.y};
+//	double m = -1/((p2.y-p1.y)/(p2.x-p1.x));
+	
+	Point vec = p1 - mid;
+	vec = inv(vec);
+
+	Point mid2 = mid + vec;
 	return {mid,mid2};
 }
 
@@ -146,44 +162,82 @@ double line_test(line &L, Point &P) {
 	return (L.b.y-L.a.y) * P.x + (L.a.x-L.b.x) * P.y + (L.b.x * L.a.y - L.a.x * L.b.y);
 }
 
+Point lineIntersectSeg(Point p, Point q, Point A, Point B) {
+	double a = B.y-A.y, b = A.x-B.x, c = B.x*A.y - A.x-B.y;
+	double u = fabs(a*p.x + b*p.y + c);
+	double v = fabs(a*q.x + b*q.y + c);
+	return {(p.x*v + q.x*u)/(u+v), (p.y*v + q.y*u) / (u+v)};
+}
+
+vector<Point> cutPolygon(Point A, Point B, const vector<Point> &Q) {
+	vector<Point> P;
+	for (int i=0; i<(int)Q.size(); ++i) {
+//		cout<<"A "<<A<<" B "<<B<<endl;
+		double left1 = cross({B.x-A.x, B.y-A.y}, {Q[i].x-A.x, Q[i].y-A.y});
+		double left2 = 0;
+		if(i != (int)Q.size()-1) left2 = cross({B.x-A.x, B.y-A.y}, {Q[i+1].x-A.x, Q[i+1].y-A.y});
+		if(left1 > -EPS) P.push_back(Q[i]);
+		if(left1*left2 < -EPS) {
+//			Point temp = lineIntersectSeg(Q[i], Q[i+1], A, B);
+			Point temp;
+			intersect_line(Q[i], Q[i+1], A, B, temp, 0);
+//			cout<<"INTERSECTION BETWEEN\n";
+//			cout<<Q[i].x<<" "<<Q[i].y<<" -> "<<Q[i+1].x<<" "<<Q[i+1].y<<endl;
+//			cout<<A.x<<" "<<A.y<<" -> "<<B.x<<" "<<B.y<<endl;
+//			cout<<" = "<<temp.x<<" "<<temp.y<<endl;
+			P.push_back(temp);
+		}
+	}
+	if (!P.empty() && !(P.back() == P.front()))
+		P.push_back(P.front());
+	return P;
+}
+
 int main() {
-	int N = 4;
-	Point poly[100];	
+	int N = 5;
+	vector<Point> poly(5);	
 	poly[0] = {0,0};
-	poly[1] = {0,10};
+	poly[1] = {10,0};
 	poly[2] = {10,10};
-	poly[3] = {10,0};
+	poly[3] = {0,10};
+	poly[4] = {0,0};
 
 	Point lastPoint = {0,0};
 
-//	double x1,x2,y1,y2;
-//	cin>>x1>>x2>>y1>>y2;
-//	Point a = {x1,y1}, b = {x2,y2};
-//	line L = perpendicular_bisector(a,b);
-//	cout<<"LINE\n"<<L.a.x<<" "<<L.a.y<<" -> "<<L.b.x<<" "<<L.b.y<<endl;
-
 	double x,y;
 	string s;
+	bool same = false;
 	while(cin>>x>>y>>s) {
 		Point curPoint = {x,y};
-		line L = perpendicular_bisector(curPoint,lastPoint);
-
-		vector<Point> to_add;
-		vector<int> to_remove;
-		for(int i=0; i<N; i++) {
-			// Check to see if intersects
-			Point p;
-			if(intersect_line(L.a, L.b, poly[i], poly[(i+1)%N], p, 1) == 1) {
-				double temp = line_test(L, p);
-				if(s == "hotter") {
-					
-				}
-			}
-			// Remove orig point if hotter/colder
-			
-			// Add new point to polygon.
+		if(s == "Same") {
+			if(!(curPoint == lastPoint))
+				same = 1;
 		}
+		
+		if(same) {
+			cout<<fixed<<setprecision(10)<<0.0<<endl;
+			continue;
+		}
+		else {
+			line L = perpendicular_bisector(lastPoint, curPoint);
+//			cout<<"LINE"<<endl;
+//			cout<<L.a.x<<" "<<L.a.y<<endl;
+//			cout<<L.b.x<<" "<<L.b.y<<endl;
 
+			Point P = (s=="Hotter")?curPoint:lastPoint;
+			int o = ccw(L.a, L.b, P);
+			if(o == CCW)
+				poly = cutPolygon(L.a, L.b, poly);
+			else if(o == CW)
+				poly = cutPolygon(L.b, L.a, poly);
+			else
+				return 1;
+		}
+		N = poly.size();
+
+//		cout<<"POLY"<<endl;
+//		for(Point p:poly)
+//			cout<<p.x<<" "<<p.y<<endl;
 		cout<<fixed<<setprecision(10)<<area_polygon(poly,N)<<endl;
 		lastPoint = curPoint;
 	}
