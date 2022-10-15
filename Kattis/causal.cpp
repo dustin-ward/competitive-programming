@@ -28,7 +28,7 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-const int OFF = 3000000;
+const int OFF = 2000000;
 
 struct Event {
 	int t;
@@ -75,21 +75,24 @@ int main() {
 			return a.t+a.x < b.t+b.x;
 		});
 		
-		int lo=minT, hi=0;
-//		while(!check(hi))
-//			hi /= 2;
-//		debug(hi);
+		cout<<"Case "<<caseno++<<": ";
+
+		int lo=0, hi=minT;
+		if(check(hi)) {
+			cout<<hi-OFF<<endl;
+			continue;
+		}
 
 		while(abs(hi-lo)>1) {
 			int mid = (lo+hi)/2;
-//			debug(lo);
-//			debug(mid);
-//			debug(hi);
 			if(check(mid))
-				hi = mid;
-			else
 				lo = mid;
+			else
+				hi = mid;
+//			debug(lo-OFF);
+//			debug(mid-OFF);
+//			debug(hi-OFF);
 		}
-		cout<<"Case "<<caseno++<<": "<<hi-OFF<<endl;
+		cout<<lo-OFF<<endl;
 	}
 }

@@ -14,6 +14,7 @@ typedef vector<int> vi;
 #define all(X) begin(X), end(X)
 #define rall(X) rbegin(X), rend(X)
 
+const double PI = acos(-1);
 double time() { return double(clock()) / CLOCKS_PER_SEC; }
 
 template<typename T, typename U> ostream& operator<<(ostream& o, const pair<T, U>& x) { o << "(" << x.fst << ", " << x.snd << ")"; return o; }
@@ -28,38 +29,30 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
 int main() {
-    int T; cin>>T;
-    while(T--) {
-        int N; cin>>N;
-        priority_queue<pii> S,B;
-        string s,g;
-       
-	   	int lastPrice = -1;
-        for(int i=0; i<N; ++i) {
-            cin>>s;
-            bool buy = s == "buy";
-            int n,p; cin>>n>>g>>g>>p;
-            if(!buy)
-                S.push(make_pair(-p, n));
-            else
-                B.push(make_pair(p, n));
+	int T; cin>>T;
+	while(T--) {
+		int N; cin>>N;
+		vi A(N);
+		for(int &i:A)
+			cin>>i;
 
-			while(!S.empty() && !B.empty() && -S.top().first <= B.top().first) {
-				pii p1 = S.top();S.pop();
-				pii p2 = B.top();B.pop();
+		for(int i=0; i<N; ++i) {
+			vi A2(N);
+			for(int j=0; j<N; j++)
+				A2[j] = A[A[j]-1];
+			A = A2;
+		}
 
-				int sale = min(p1.second, p2.second);
-				p1.second -= sale;
-				p2.second -= sale;
-				lastPrice = -p1.first;
-				if(p1.second)
-					S.push(p1);
-				if(p2.second)
-					B.push(p2);
+		bool valid = true;
+		for(int i=1; i<N; ++i) {
+			if(A[i] < A[i-1]) {
+				valid = false;
+				break;
 			}
-			cout<<(S.empty()?"-":to_string(-S.top().first))<<" ";
-			cout<<(B.empty()?"-":to_string(B.top().first))<<" ";
-			cout<<(lastPrice==-1?"-":to_string(lastPrice))<<endl;
-        }
-    }
+		}
+		if(valid)
+			cout<<"All can eat."<<endl;
+		else
+			cout<<"Some starve."<<endl;
+	}
 }

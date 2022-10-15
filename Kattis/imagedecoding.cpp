@@ -14,6 +14,7 @@ typedef vector<int> vi;
 #define all(X) begin(X), end(X)
 #define rall(X) rbegin(X), rend(X)
 
+const double PI = acos(-1);
 double time() { return double(clock()) / CLOCKS_PER_SEC; }
 
 template<typename T, typename U> ostream& operator<<(ostream& o, const pair<T, U>& x) { o << "(" << x.fst << ", " << x.snd << ")"; return o; }
@@ -28,38 +29,40 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
 int main() {
-    int T; cin>>T;
-    while(T--) {
-        int N; cin>>N;
-        priority_queue<pii> S,B;
-        string s,g;
-       
-	   	int lastPrice = -1;
-        for(int i=0; i<N; ++i) {
-            cin>>s;
-            bool buy = s == "buy";
-            int n,p; cin>>n>>g>>g>>p;
-            if(!buy)
-                S.push(make_pair(-p, n));
-            else
-                B.push(make_pair(p, n));
+	int N;
+	bool flag=false;
+	while(cin>>N && N) {
+		cin.ignore();
+		string line;
+		
+		if(flag)
+			cout<<"\n";
+		else
+			flag = true;
 
-			while(!S.empty() && !B.empty() && -S.top().first <= B.top().first) {
-				pii p1 = S.top();S.pop();
-				pii p2 = B.top();B.pop();
+		int w = -1;
+		bool err = false;
+		while(N--) {
+			getline(cin,line);
+			istringstream iss(line);
 
-				int sale = min(p1.second, p2.second);
-				p1.second -= sale;
-				p2.second -= sale;
-				lastPrice = -p1.first;
-				if(p1.second)
-					S.push(p1);
-				if(p2.second)
-					B.push(p2);
+			char c; iss>>c;
+			bool hash = c == '#';
+			int n;
+			int count = 0;
+			while(iss>>n) {
+				for(int i=0; i<n; ++i,++count)
+					cout<<(hash?'#':'.');
+				hash = !hash;
 			}
-			cout<<(S.empty()?"-":to_string(-S.top().first))<<" ";
-			cout<<(B.empty()?"-":to_string(B.top().first))<<" ";
-			cout<<(lastPrice==-1?"-":to_string(lastPrice))<<endl;
-        }
-    }
+			cout<<"\n";
+
+			if(w == -1)
+				w = count;
+			else if(w != count)
+				err = true;
+		}
+		if(err)
+			cout<<"Error decoding image\n";
+	}
 }
