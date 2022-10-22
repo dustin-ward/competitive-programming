@@ -31,71 +31,63 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 int N,M;
 vi X;
 
-int dpl[302][302][302] = {-1};
-int dpr[302][302][302] = {-1};
+int dp[302][302][302][2] = {-1};
 
-int R(int i, int j, int k);
-int L(int i, int j, int k) {
-	int &ans = dpl[i][j][k];
-	if(ans != -1)
-		return ans;
+int f(int l, int r, int k, int pos) {
+	cout<<"l "<<l<<" r "<<r<<" k "<<k<<" pos "<<pos<<endl;
+	if(!k) return 0;
+
+	int &ans = dp[l][r][k][pos];
+	//debug(dp[l][r][k][pos]);
+	//if(ans != -1) return ans;
+
+	int curPos = (pos)?r:l;
+
+	int lAns=-1,rAns=-1;
+	if(l > 0)
+		lAns = f(l-1, r, k-1, 0) + abs(X[l-1]-X[curPos]);
+	if(r < N-1)
+		rAns = f(l, r+1, k-1, 1) + abs(X[r+1]-X[curPos]);
+	cout<<"lAns "<<lAns<<" rAns "<<rAns<<endl;
+
+	if(lAns == -1 && rAns == -1) return 0;
 	
-	if(k == 0)
-		return ans = 0;
-
-	if(i==0 && j==N-1)
-		return ans = 0;
-	
-	if(!i)
-		return ans = R(i,j+1,k-1)+k*(X[j+1]-X[i]);
-	if(j==N-1)
-		return ans = L(i-1,j,k-1)+k*(X[i]-X[i-1]);
-
-	return ans = min(L(i-1,j,k-1)+k*(X[i]-X[i-1]), R(i,j+1,k-1)+k*(X[j+1]-X[i]));
-}
-
-int R(int i, int j, int k) {
-	int &ans = dpr[i][j][k];
-	if(ans != -1)
-		return ans;
-	
-	if(k == 0)
-		return ans = 0;
-
-	if(i==0 && j==N-1)
-		return ans = 0;
-	
-	if(!i)
-		return ans = R(i,j+1,k-1)+k*(X[j+1]-X[i]);
-	if(j==N-1)
-		return ans = L(i-1,j,k-1)+k*(X[i]-X[i-1]);
-
-	return ans = min(L(i-1,j,k-1)+k*(X[i]-X[i-1]), R(i,j+1,k-1)+k*(X[j+1]-X[i]));
+	if(lAns == -1) return ans = rAns;
+	if(rAns == -1) return ans = lAns;
+	return ans = min(lAns,rAns);
 }
 
 int main() {
 	cin>>N>>M;
+	
+	for(int i=0; i<N; ++i)
+		for(int j=0; j<N; ++j)
+			for(int k=0; k<N; ++k)
+				dp[i][j][k][0] = dp[i][j][k][1] = -1;
+
 	X.resize(N);
 	int zero = 0;
 	for(int &i:X) {
 		cin>>i;
-		if(!X[i])
+		if(i == 0)
 			zero = M;
 	}
-	if(!zero) {
+	debug(zero);
+	if(zero == 0) {
 		X.push_back(0);
 		N++;
 	}
 	sort(all(X));
+	debug(X);
 	int zero_pos = distance(X.begin(), lower_bound(all(X), 0));
 
-//	for(int i=0; i<301; ++i)
-//		for(int j=0; j<301; ++j)
-//			for(int k=0; k<301; ++k)
-//				dpl[i][j][k] = dpr[i][j][k] = -1;
-
 	int ans = 0;
-	for(int k=1; k<N; ++k)
-		ans = max(L(zero_pos,zero_pos,k), ans);
+	for(int k=1; k<N; ++k) {
+		debug(k);
+		int val = f(zero_pos, zero_pos, k, 0);
+		debug(val);
+		ans = max(k*M - val, ans);
+		debug(k*M - val);
+	}
 	cout<<ans+zero<<endl;
 }
