@@ -28,67 +28,112 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N,M;
-vi X;
+class UnionFind
+{
+      struct UF { int p; int rank; };
 
-int dp[302][302][302][2];
+   public:
+      UnionFind(int n) {          // constructor
+	 howMany = n;
+	 uf = new UF[howMany];
+	 for (int i = 0; i < howMany; i++) {
+	    uf[i].p = i;
+	    uf[i].rank = 0;
+	 }
+      }
 
+      ~UnionFind() {
+         delete[] uf;
+      }
 
-int f(int l, int r, int k, int pos) {
-	//cout<<"l "<<l<<" r "<<r<<" k "<<k<<" pos "<<pos<<endl;
-	if(!k) return 0;
+      int find(int x) { return find(uf,x); }        // for client use
+      
+      bool merge(int x, int y) {
+	 int res1, res2;
+	 res1 = find(uf, x);
+	 res2 = find(uf, y);
+	 if (res1 != res2) {
+	    if (uf[res1].rank > uf[res2].rank) {
+	       uf[res2].p = res1;
+	    }
+	    else {
+	       uf[res1].p = res2;
+	       if (uf[res1].rank == uf[res2].rank) {
+		  uf[res2].rank++;
+	       }
+	    }
+	    return true;
+	 }
+	 return false;
+      }
+      
+   private:
+      int howMany;
+      UF* uf;
 
-	int &ans = dp[l][r][k][pos];
-	//debug(dp[l][r][k][pos]);
-	if(ans != -1) return ans;
+      int find(UF uf[], int x) {             // for internal use
+	 if (uf[x].p != x) {
+	    uf[x].p = find(uf, uf[x].p);
+	 }
+	 return uf[x].p;
+      }
+};
 
-	int curPos = (pos)?r:l;
+class Edge {
 
-	int lAns=-1,rAns=-1;
-	if(l > 0)
-		lAns = f(l-1, r, k-1, 0) + k*abs(X[l-1]-X[curPos]);
-	if(r < N-1)
-		rAns = f(l, r+1, k-1, 1) + k*abs(X[r+1]-X[curPos]);
-	//cout<<"lAns "<<lAns<<" rAns "<<rAns<<endl;
+   public:
+      Edge(int i=-1, int j=-1, double weight=0) {
+	 v1 = i;
+	 v2 = j;
+	 w = weight;
+      }
+      bool operator<(const Edge& e) const { return w < e.w; }
 
-	if(lAns == -1 && rAns == -1) return 0;
-	
-	if(lAns == -1) return ans = rAns;
-	if(rAns == -1) return ans = lAns;
-	return ans = min(lAns,rAns);
-}
+      int v1, v2;          /* two endpoints of edge                */
+      double w;            /* weight, can be double instead of int */
+};
 
 int main() {
-	cin>>N>>M;
+	int N,E,P; cin>>N>>E>>P;
 	
-	for(int i=0; i<=N; ++i)
-		for(int j=0; j<=N; ++j)
-			for(int k=0; k<=N; ++k)
-				dp[i][j][k][0] = dp[i][j][k][1] = -1;
+	UnionFind uf(N);
+	Edge elist[500000];
+	int index[1001];
+	vector<pair<double,double>> V;
+	for(int i=0; i<N; ++i) {
+		double x,y; cin>>x>>y;
+		V.emplace_back(x,y);
+	}
 
-	X.resize(N);
-	int zero = 0;
-	for(int &i:X) {
-		cin>>i;
-		if(i == 0)
-			zero = M;
+	int c=0;
+	for(int i=0; i<N; ++i) {
+		for(int j=i+1; j<N; ++j) { 
+			double dx = (V[i].fst-V[j].fst)*(V[i].fst-V[j].fst);
+			double dy = (V[i].snd-V[j].snd)*(V[i].snd-V[j].snd);
+			elist[c++] = Edge(i,j, sqrt(dx+dy));
+		}
 	}
-	//debug(zero);
-	if(zero == 0) {
-		X.push_back(0);
-		N++;
-	}
-	sort(all(X));
-	//debug(X);
-	int zero_pos = distance(X.begin(), lower_bound(all(X), 0));
 
-	int ans = 0;
-	for(int k=1; k<N; ++k) {
-		//debug(k);
-		int val = f(zero_pos, zero_pos, k, 0);
-		//debug(val);
-		ans = max(k*M - val, ans);
-		//debug(k*M - val);
+	for(int i=1; i<E; ++i)
+		uf.merge(i,i-1);
+
+	for(int i=0; i<P; ++i) {
+		int u,v; cin>>u>>v;
+		uf.merge(u-1,v-1);
 	}
-	cout<<ans+zero<<endl;
+
+	sort(elist, elist+N);
+	double w = 0.0;
+	int size = E+P-1;
+  	for (int i = 0; i < c && size < N-1; i++) {
+    	int c1 = uf.find(elist[i].v1);
+    	int c2 = uf.find(elist[i].v2);
+    	if (c1 != c2) {
+      		index[size++] = i;
+      		w += elist[i].w;
+      		uf.merge(c1, c2);
+    	}
+  	}
+
+  	cout<<fixed<<setprecision(10)<<w<<endl;
 }
