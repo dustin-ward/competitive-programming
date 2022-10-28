@@ -93,7 +93,6 @@ class Edge {
       double w;            /* weight, can be double instead of int */
 };
 
-
 double mst(int n, int m, Edge elist[], int index[], int& size)
 {
   UnionFind uf(n);

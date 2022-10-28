@@ -31,24 +31,25 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 int N,M;
 vi X;
 
-int dp[302][302][302][2] = {-1};
+int dp[302][302][302][2];
+
 
 int f(int l, int r, int k, int pos) {
-	cout<<"l "<<l<<" r "<<r<<" k "<<k<<" pos "<<pos<<endl;
+	//cout<<"l "<<l<<" r "<<r<<" k "<<k<<" pos "<<pos<<endl;
 	if(!k) return 0;
 
 	int &ans = dp[l][r][k][pos];
 	//debug(dp[l][r][k][pos]);
-	//if(ans != -1) return ans;
+	if(ans != -1) return ans;
 
 	int curPos = (pos)?r:l;
 
 	int lAns=-1,rAns=-1;
 	if(l > 0)
-		lAns = f(l-1, r, k-1, 0) + abs(X[l-1]-X[curPos]);
+		lAns = f(l-1, r, k-1, 0) + k*abs(X[l-1]-X[curPos]);
 	if(r < N-1)
-		rAns = f(l, r+1, k-1, 1) + abs(X[r+1]-X[curPos]);
-	cout<<"lAns "<<lAns<<" rAns "<<rAns<<endl;
+		rAns = f(l, r+1, k-1, 1) + k*abs(X[r+1]-X[curPos]);
+	//cout<<"lAns "<<lAns<<" rAns "<<rAns<<endl;
 
 	if(lAns == -1 && rAns == -1) return 0;
 	
@@ -60,9 +61,9 @@ int f(int l, int r, int k, int pos) {
 int main() {
 	cin>>N>>M;
 	
-	for(int i=0; i<N; ++i)
-		for(int j=0; j<N; ++j)
-			for(int k=0; k<N; ++k)
+	for(int i=0; i<=N; ++i)
+		for(int j=0; j<=N; ++j)
+			for(int k=0; k<=N; ++k)
 				dp[i][j][k][0] = dp[i][j][k][1] = -1;
 
 	X.resize(N);
@@ -72,22 +73,22 @@ int main() {
 		if(i == 0)
 			zero = M;
 	}
-	debug(zero);
+	//debug(zero);
 	if(zero == 0) {
 		X.push_back(0);
 		N++;
 	}
 	sort(all(X));
-	debug(X);
+	//debug(X);
 	int zero_pos = distance(X.begin(), lower_bound(all(X), 0));
 
 	int ans = 0;
 	for(int k=1; k<N; ++k) {
-		debug(k);
+		//debug(k);
 		int val = f(zero_pos, zero_pos, k, 0);
-		debug(val);
+		//debug(val);
 		ans = max(k*M - val, ans);
-		debug(k*M - val);
+		//debug(k*M - val);
 	}
 	cout<<ans+zero<<endl;
 }

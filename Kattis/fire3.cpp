@@ -129,36 +129,48 @@ int main() {
 	for(string &s:B)
 		cin>>s;
 
-	pii J,F;
+	pii J;
+	vector<pii> F;
 
-	vector<vi> G(R*C);
+	Graph G((R*C)+1);
 	for(int i=0; i<R; ++i) {
 		for(int j=0; j<C; ++j) {
 			if(B[i][j] != '#') {
 				if(B[i][j] == 'J')
 					J = {i,j};
 				if(B[i][j] == 'F')
-					F = {i,j};
+					F.emplace_back(i,j);
 				
 				for(int k=0; k<4; ++k) {
 					int i2 = i+dy[k];
 					int j2 = j+dx[k];
 					if(bounds(i2,j2) && B[i2][j2] != '#') {
-						G[node(i,j)].push_back(node(i2,j2));
-						G[node(i2,j2)].push_back(node(i,j));
+						G.add_edge(node(i,j),node(i2,j2),1);
+						G.add_edge(node(i2,j2),node(i,j),1);
 					}
 				}
 			}
 		}
 	}
 
-	vector<vi> JD(R,vi(C,-1)), FD(R,vi(C,-1));
-	
+	for(auto p:F)
+		G.add_edge(R*C, node(p.fst,p.snd), 0);
+
+	vi JD,JP,FD,FP;
+	dijkstra(G, node(J.fst,J.snd), JD,JP);
+	dijkstra(G, R*C, FD,FP);
 
 	int ans = INT_MAX;
 	for(int i=0; i<R; ++i) {
-		for(int j=0; i<C; j+=(i==0||i==R-1)?1:C-1) {
-			if(
+		for(int j=0; j<C; j+=((i==0||i==R-1)?1:C-1)) {
+			if(B[i][j] != '#' && JD[node(i,j)] != -1) {
+				if(JD[node(i,j)] < FD[node(i,j)] || FD[node(i,j)] == -1)
+					ans = min(ans, JD[node(i,j)]);
+			}
 		}
 	}
+	if(ans != INT_MAX)
+		cout<<ans+1<<endl;
+	else
+		cout<<"IMPOSSIBLE"<<endl;
 }
