@@ -28,65 +28,59 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+int dp[101][301][53];
+int N,W;
+vector<vpii> K;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+int f(int p, int n, int w) {
+    // cout<<"====="<<endl;
+    // debug(p);debug(n);debug(w);
+    int &ans = dp[p][n][w];
+    if(ans != -1) return ans;
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+    int sold = min(n,K[w][p].snd);
+    ans = sold * K[w][p].fst;
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+    if(w < W) {
+        int ans2 = 0;
+        for(int i=0; i<sz(K[w+1]); i++)
+            ans2 = max(ans2,f(i,n-sold,w+1));
+        ans += ans2;
+    }
+    
+    // debug(ans);
+    return ans;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N>>W;
+    K.resize(W+1);
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    for(int i=0; i<101; i++)
+        for(int j=0; j<=N; j++)
+            for(int k=0; k<=W; k++)
+                dp[i][j][k] = -1;
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    for(int i=0; i<=W; i++) {
+        int k; cin>>k;
+        K[i].resize(k);
+        for(int j=0; j<k; j++)
+            cin>>K[i][j].fst;
+        for(int j=0; j<k; j++)
+            cin>>K[i][j].snd;
+    }
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    int ans = 0;
+    int p=K[0][0].fst;
+    for(int i=0; i<sz(K[0]); i++) {
+        int r = f(i,N,0);
+        if(r > ans) {
+            ans = r;
+            p = K[0][i].fst;
+        }
+        else if(r == ans) {
+            p = min(p, K[0][i].fst);
+        }
+    }
+    cout<<ans<<"\n"<<p<<endl;
 }

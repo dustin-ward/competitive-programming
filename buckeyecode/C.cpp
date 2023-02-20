@@ -28,65 +28,40 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+int B,N;
+vi X;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
-
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
-
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
+bool check(int M) {
+	int b=0;
+	for(int i=0; i<N; ++i) {
+		if(X[i] > M) {
+			b += (X[i]+M-1)/M;
 		}
+		else
+			b++;
 	}
-	return ans = 0;
+	return b <= B;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+	cin>>B>>N;
+	X.resize(N);
+	for(int &i:X)
+		cin>>i;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+	sort(all(X));
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
+	if(B == N) {
+		cout<<X[sz(X)-1]<<endl;
+		return 0;
 	}
+	int hi=X[sz(X)-1], lo=1;
+	while(hi-lo > 1) {
+		int mid = (hi+lo)/2;
+		if(check(mid))
+			hi = mid;
+		else
+			lo = mid;
+	}
+	cout<<hi<<endl;
 }

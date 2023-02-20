@@ -28,65 +28,77 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+int N,M;
+vector<string> B;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+int doors = 0;
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+int dx[4] = {-1,0,1,0};
+int dy[4] = {0,-1,0,1};
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+bool bounds(int i, int j) {
+    return i>=0 && i<N && j>=0 && j<M;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N>>M;cin.ignore();
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    B.resize(N);
+    for(string &s:B)
+        getline(cin,s);
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    vector<vi> V(N,vi(M,0));
+    for(int i=0; i<N; ++i) {
+        for(int j=0; j<M; j+= (i==0||i==N-1)?1:M-1) {
+            if(B[i][j] != 'X') {
+                doors++;
+                int dots=0;
+                 
+    
+//                cout<<"BFS "<<B[i][j]<<endl;
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+                queue<pii> Q;
+                Q.push(make_pair(i,j));
+                V[i][j] = 1;
+                while(!Q.empty()) {
+                    pii cur = Q.front();
+                    Q.pop();
+
+                    if(B[cur.fst][cur.snd] == '.') {
+                        dots++;
+                        B[cur.fst][cur.snd] = ' ';
+                    }
+
+//                    if(B[cur.fst][cur.snd] >= 'A' && B[cur.fst][cur.snd] <= 'Z' && B[cur.fst][cur.snd] != 'X')
+//                        B[cur.fst][cur.snd] = 'X';
+
+                    for(int k=0; k<4; ++k) {
+                        pii next = cur;
+                        next.fst+=dy[k];
+                        next.snd+=dx[k];
+                        if(bounds(next.fst,next.snd) && (B[next.fst][next.snd] < 'A' || B[next.fst][next.snd] > 'Z') && !V[next.fst][next.snd]) {
+                            V[next.fst][next.snd] =1;
+                            Q.push(next);
+                        }
+                    }
+                }
+
+                if(!dots)
+                    doors--;
+            }
+        }
+    }
+
+    int dots=0;
+    for(int i=0; i<N; ++i)
+        for(int j=0; j<M; ++j)
+            dots += B[i][j] == '.';
+    cout<<doors<<" "<<dots<<endl;
+
+//    cout<<endl;
+//    for(int i=0; i<N; ++i) {
+//        for(int j=0; j<M; ++j)
+//            cout<<B[i][j];
+//        cout<<endl;
+//    }
 }

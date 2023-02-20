@@ -28,65 +28,26 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
-
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
-
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
-
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+const int MAX_N = 10;
+ll binom[MAX_N+1][MAX_N+1];
+void precomp()
+{
+  for (int n = 0; n <= MAX_N; n++) {
+    binom[n][0] = binom[n][n] = 1;
+    for (int k = 1; k < n; k++) {
+      binom[n][k] = binom[n-1][k] + binom[n-1][k-1];
+    }
+  }
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
-
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
-
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    precomp();
+    int N; cin>>N;
+    while(N--) {
+        int R,S,X,Y,W; cin>>R>>S>>X>>Y>>W;
+        double p = 0.0;
+        for(int i=X; i<=Y; ++i)
+            p += binom[Y][i] * pow((S-(R-1.0))/S, i) * pow((R-1.0)/S, Y-i);
+        cout<<(p * W > 1 ? "yes" : "no")<<endl;
+    }
 }

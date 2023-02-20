@@ -28,65 +28,69 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+ll N,S,K;
+vector<ll> X;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+bool f(ll D) {
+    cout<<"D = "<<D<<endl;
+    vector<pair<double,double>> dis(sz(X));
+    ll minD = INT_MAX;
+    for(int i=0; i<sz(X); ++i) {
+        if(!i)
+            dis[i].fst = INT_MAX;
+        else
+            dis[i].fst = X[i]-X[i-1];
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+        if(i==sz(X)-1)
+            dis[i].snd = INT_MAX;
+        else
+            dis[i].snd = X[i+1]-X[i];
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+        minD = min(minD,(ll)min(dis[i].fst,dis[i].snd));
+    }
+
+    if(minD < S) return false;
+
+    vi idx(sz(dis));
+    for(int i=0; i<sz(dis); ++i)
+        idx[i] = i;
+    sort(all(idx), [dis](const int &i, const int &j) {
+        auto a = dis[i];
+        auto b = dis[j];
+        if(max(a.fst,a.snd) == max(b.fst,b.snd)) {
+            return min(a.fst,a.snd) > min(b.fst,b.snd);
+        } else 
+            return max(a.fst,a.snd) > max(b.fst,b.snd);
+    });
+
+    ll total = 0;
+    for(int i:idx) {
+        double s = min(dis[i].fst,dis[i].snd);
+        total += min(K, (ll)((2*s)-1));  
+    }
+    debug(total);
+
+    return total == D;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N>>S>>K;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    X.resize(N);
+    for(ll &i:X)
+        cin>>i;
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    sort(all(X));
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    ll hi=N*K;
+    ll lo=0;
+    while(hi>lo+1) {
+        ll mid = (lo+hi)/2;
+        if(f(mid))
+            lo = mid;
+        else
+            hi = mid;
+    }
+
+    cout<<lo<<endl;
 }

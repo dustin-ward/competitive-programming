@@ -28,65 +28,59 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+int N,M,ans = INT_MAX,value;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+struct Node {
+    int Items;
+    int Distance = INT_MAX;
+    bool Visited = false;
+    vpii Edges;
+};
+vector<Node> G;
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+void dfs(int n) {
+    if(n == N-1) {
+        if(G[n].Distance < ans) {
+            ans = G[n].Distance;
+            value = G[n].Items;
+        }
+        else if(G[n].Distance == ans)
+            value = max(value, G[n].Items);
+        return;
+    }
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+    for(auto &[v,w]:G[n].Edges) {
+        if(!G[v].Visited && G[n].Distance+w <= G[v].Distance) {
+            G[v].Distance = G[n].Distance+w;
+            G[v].Items += G[n].Items;
+            G[v].Visited = 1;
+            dfs(v);
+            G[v].Visited = 0;
+            G[v].Items -= G[n].Items;
+        }
+    }
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N;
+    G.resize(N);
+    for(Node &n:G)
+        cin>>n.Items;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    cin>>M;
+    for(int i=0; i<M; ++i) {
+        int u,v,w; cin>>u>>v>>w;
+        u--; v--;
+        G[u].Edges.emplace_back(v,w);
+        G[v].Edges.emplace_back(u,w);
+    }
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    G[0].Visited = 1;
+    G[0].Distance = 0;
+    dfs(0);
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    if(G[N-1].Distance == INT_MAX)
+        cout<<"impossible"<<endl;
+    else
+        cout<<ans<<" "<<value<<endl;
 }

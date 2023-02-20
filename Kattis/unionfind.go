@@ -1,9 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"log"
+	"os"
 )
+
+var reader *bufio.Reader = bufio.NewReader(os.Stdin)
+var writer *bufio.Writer = bufio.NewWriter(os.Stdout)
+
+func printf(f string, a ...interface{}) { fmt.Fprintf(writer, f, a...) }
+func scanf(f string, a ...interface{})  { fmt.Fscanf(reader, f, a...) }
 
 type UnionFind struct {
 	howMany int
@@ -52,16 +59,15 @@ func (uf *UnionFind) merge(x, y int) bool {
 
 func main() {
 	var n, q int
-	fmt.Scanf("%d %d", &n, &q)
+	scanf("%d %d\n", &n, &q)
 	uf := NewUnionFind(n)
 	ans := ""
 	for i := 0; i < q; i++ {
-		var a, b, c int
-		if _, err := fmt.Scanf("%c %d %d", &c, &a, &b); err != nil {
-			log.Fatal(err.Error())
-		}
+		var a, b int
+        var c string
+		scanf("%s %d %d\n", &c, &a, &b)
 
-		if c == '=' {
+		if c == "=" {
 			uf.merge(a, b)
 		} else {
 			if uf.find(a) == uf.find(b) {
@@ -71,5 +77,6 @@ func main() {
 			}
 		}
 	}
-	fmt.Println(ans)
+	printf("%s", ans)
+	defer writer.Flush()
 }

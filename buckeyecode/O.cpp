@@ -28,65 +28,60 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
-
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
-
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
-
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
-}
+using u32    = uint_least32_t; 
+using engine = std::mt19937;
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
-
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
-
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
+	double tic = time();
+	int N,S,D,C; cin>>N>>S>>D>>C;
+	vector<vi> G(N);
+	for(int i=0; i<C; ++i) {
+		string s; cin>>s;
+		istringstream iss(s);
+		int u; iss>>u;
+		int v;
+		while(iss>>v)
+			G[u-1].push_back(v-1);
 	}
+//	for(int i=0; i<N; ++i) {
+//		if(!sz(G[i]))
+//			G[i].push_back((i+1)%N);
+//	}
+	int range = S*D;
+
+	random_device os_seed;
+  	const u32 seed = os_seed();
+
+  	engine generator( seed );
+  	uniform_int_distribution< u32 > distribute(0, 1000);
+	//std::cout << distribute( generator ) << std::endl;
+
+	vector<ll> V(N,0);
+	double total = 0;
+	int curHouse=0;
+	while(time()-tic < 0.8) {
+		total++;
+		V[curHouse]++;
+		if(G[curHouse].empty()) {
+			curHouse = (curHouse + ((distribute(generator)+S)%range)) % N;
+		}
+		else {
+			curHouse = G[curHouse][distribute(generator)%sz(G[curHouse])];
+		}
+	}
+	debug(V);
+	vector<pair<int,double>> ans(N);
+	for(int i=0; i<N; ++i)
+		ans[i] = {i+1, V[i]/total};
+	sort(all(ans), [](const pair<int,double> &a, const pair<int,double> &b) {
+					if(a.snd == b.snd)
+						return a.fst < b.fst;
+					return a.snd > b.snd;
+				}
+	);
+
+	for(int i=0; i<3; ++i)
+		cout<<fixed<<setprecision(3)<<ans[i].fst<<" "<<ans[i].snd<<endl;
+
+	debug(time());
 }

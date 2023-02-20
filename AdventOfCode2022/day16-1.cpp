@@ -28,65 +28,61 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+struct Vlv {
+    int val;
+    vi tunnels;
+};
 
+map<string,int> M;
 int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
+    if(!M.count(s))
+        M[s] = sz(M);
+    return M[s];
 }
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+vector<Vlv> G;
+map<ll,int> DP[100][31];
+int maxPressure(int n, int t, ll m) {
+    map<ll,int> &M = DP[n][t];
+    if(M.count(m))
+        return M[m];
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+    if(t <= 0) return 0;
+    int ans = 0;
+    int open = G[n].val * (t-1);
+
+    if(G[n].val && (m & (1LL<<n)) == 0)
+        ans = max(ans, maxPressure(n, t-1, m | (1LL<<n)) + open);
+
+    for(int i:G[n].tunnels) {
+        int dontOpen = maxPressure(i,t-1,m);
+        ans = max(ans, dontOpen);
+    }
+
+    return M[m] = ans;
 }
 
-int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+int main() { 
+    G.resize(100);
+    string s;
+    while(getline(cin,s)) {
+        s += ",";
+        istringstream iss(s);
+        string g,lbl;
+        char c;
+        
+        Vlv v;
+        iss>>g>>lbl>>g>>g>>c>>c>>c>>c>>c>>v.val>>c>>g>>g>>g>>g;
+        assert(g == "valves" || g == "valve");
+        int id = getId(lbl);
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+        string lbl2;
+        while(iss>>lbl2) {
+            lbl2 = lbl2.substr(0, sz(lbl2)-1);
+            v.tunnels.push_back(getId(lbl2));
+        }
+        G[id] = v;
+    }
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    cout<<maxPressure(getId("AA"), 30, 0)<<endl;
 }

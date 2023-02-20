@@ -26,67 +26,59 @@ template<typename T> ostream& operator<<(ostream& o, const unordered_multiset<T>
 template<typename T, typename U> ostream& operator<<(ostream& o, const map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
-template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+int N,P;
+int ans = INT_MAX;
+vi T;
+vector<vi> G;
 
+map<string,int> M;
 int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
+    if(!M.count(s))
+        M[s] = sz(M);
+    return M[s];
 }
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+void f(int n, int d, int m) {
+    debug(n);debug(d);debug(m);
+    cout<<(1<<P)-1<<" == "<<m<<"?"<<endl;
+    if(m == ((1<<P)-1)) {
+        ans = min(ans, d);
+        return;
+    }
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+    for(int i=0; i<N; ++i) {
+        if(G[n][i] == -1) continue;
+        if(m & (1<<T[i])) continue;
+        f(i, d+G[n][i], m | (1<<T[i]));
+    }
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    N++;
+    vector<pii> V(N);
+    T.resize(N);
+    V[0] = {0,0};
+    for(int i=1; i<N; ++i) {
+        cin>>V[i].fst>>V[i].snd;
+        string s; cin>>s;
+        T[i] = getId(s);
+    }
+    T[0] = sz(M);
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    P = sz(M);
+    G.resize(N, vi(N, -1));
+    for(int i=0; i<N; ++i) {
+        for(int j=i+1; j<N; ++j) {
+            int dy = abs(V[i].snd-V[j].snd);
+            int dx = abs(V[i].fst-V[j].fst);
+            G[i][j] = G[j][i] = dy + dx;
+        }
+    }
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    f(0,0,(1<<T[0]));
+
+    cout<<ans<<endl;
 }

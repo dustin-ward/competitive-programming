@@ -28,65 +28,62 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+map<string,int> L;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+vector<vi> G;
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
-
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
-}
+int N,M;
+vi D,C;
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N>>M;
+    D.resize(N+1, -1);
+    C.resize(N+1, -1);
+    G.resize(N+1, vi(N+1,-1));
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    L["English"] = 0;
+    for(int i=1; i<=N; ++i) {
+        string s; cin>>s;
+        L[s] = i;
+    }
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+    for(int i=0; i<M; ++i) {
+        string u,v; cin>>u>>v;
+        int c; cin>>c;
+        G[L[u]][L[v]] = G[L[v]][L[u]] = c;
+    }
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    queue<int> Q;
+    Q.push(0);
+    D[0] = 0;
+    C[0] = 0;
+    while(!Q.empty()) {
+        int n = Q.front(); Q.pop();
+
+        for(int i=0; i<=N; ++i) {
+            if(G[n][i] == -1) continue;
+            if(D[i] == -1) {
+                D[i] = D[n]+1;
+                C[i] = G[n][i];
+                Q.push(i);
+            }
+            else if(D[i] == D[n]+1)
+                C[i] = min(C[i], G[n][i]);
+        }
+    }
+
+    debug(D);
+    debug(C);
+
+    int ans = 0;
+    bool good = true;
+    for(int i=0; i<=N; ++i) {
+        if(C[i] == -1)
+            good = false;
+        ans += C[i];
+    }
+    if(good)
+        cout<<ans<<endl;
+    else
+        cout<<"Impossible"<<endl;
 }

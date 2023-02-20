@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <iomanip>
 using namespace std;
 
 typedef long long ll;
@@ -28,65 +29,55 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+typedef tuple<double,int,int> seg;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+// (x1,y1) , (x2,y2) are corners of axis-aligned rectangles
+struct rectangle{ double x1,y1,x2,y2; };
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+struct segment_tree{
+  int n; const vector<double>& v;  vector<int> pop;  vector<double> len;
+  segment_tree(const vector<double>& y) : n(y.size()),v(y),pop(2*n-3),len(2*n-3) {}
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
+  double add(pair<double,double> s,int a){ return add(s,a,0,n-2); }
+  double add(const pair<double,double>& s, int a, int lo, int hi){
+    int m = (lo+hi)/2 + (lo == hi ? n-2 : 0);
+    if(a && (v[lo] < s.second) && (s.first < v[hi+1])){
+      if((s.first <= v[lo]) && (v[hi+1] <= s.second)){
+	pop[m] += a;
+	len[m] = (lo == hi ? 0 : add(s,0,lo,m) + add(s,0,m+1,hi));
+      } else len[m] = add(s,a,lo,m) + add(s,a,m+1,hi);
+      if(pop[m] > 0) len[m] = v[hi+1] - v[lo];
+    }
+    return len[m];
+  }
+};
+
+double area_union_rectangles(vector<rectangle>& R){
+  vector<double> y; vector<seg> v;
+  for(int i=0;i<R.size();i++){
+    if(R[i].x1 == R[i].x2 || R[i].y1 == R[i].y2) continue;
+    y.push_back(R[i].y1), y.push_back(R[i].y2);
+    if(R[i].y1 > R[i].y2) swap(R[i].y1,R[i].y2);
+    v.push_back(seg(min(R[i].x1,R[i].x2),i, 1));
+    v.push_back(seg(max(R[i].x1,R[i].x2),i,-1));
+  }
+  sort(v.begin(),v.end());  sort(y.begin(),y.end());
+  y.resize(unique(y.begin(),y.end()) - y.begin());
+  segment_tree s(y); double area = 0, amt = 0, last = 0;
+  for(int i=0;i<v.size();i++){
+    area += amt * (get<0>(v[i]) - last);
+    last = get<0>(v[i]); int t = get<1>(v[i]);
+    amt = s.add(make_pair(R[t].y1,R[t].y2),get<2>(v[i]));
+  }
+  return area;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    int N; cin>>N;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    vector<rectangle> A(N);
+    for(rectangle &r:A)
+        cin>>r.x1>>r.y1>>r.x2>>r.y2;
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    cout<<fixed<<setprecision(2)<<area_union_rectangles(A)<<endl;
 }

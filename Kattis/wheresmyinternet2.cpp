@@ -28,65 +28,76 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+class UnionFind
+{
+      struct UF { int p; int rank; };
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
-}
+   public:
+      UnionFind(int n) {          // constructor
+	 howMany = n;
+	 uf = new UF[howMany];
+	 for (int i = 0; i < howMany; i++) {
+	    uf[i].p = i;
+	    uf[i].rank = 0;
+	 }
+      }
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+      ~UnionFind() {
+         delete[] uf;
+      }
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
-}
+      int find(int x) { return find(uf,x); }        // for client use
+      
+      bool merge(int x, int y) {
+	 int res1, res2;
+	 res1 = find(uf, x);
+	 res2 = find(uf, y);
+	 if (res1 != res2) {
+	    if (uf[res1].rank > uf[res2].rank) {
+	       uf[res2].p = res1;
+	    }
+	    else {
+	       uf[res1].p = res2;
+	       if (uf[res1].rank == uf[res2].rank) {
+		  uf[res2].rank++;
+	       }
+	    }
+	    return true;
+	 }
+	 return false;
+      }
+      
+   private:
+      int howMany;
+      UF* uf;
+
+      int find(UF uf[], int x) {     // recursive funcion for internal use
+	 if (uf[x].p != x) {
+	    uf[x].p = find(uf, uf[x].p);
+	 }
+	 return uf[x].p;
+      }
+};
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    int N,M; cin>>N>>M;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    UnionFind uf(N+1);
+    for(int i=0; i<M; i++) {
+        int u,v; cin>>u>>v;
+        uf.merge(u,v);
+    }
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+    vi ans;
+    for(int i=1; i<=N; i++) {
+        if(uf.find(i) != uf.find(1))
+            ans.push_back(i);
+    }
+    
+    if(sz(ans)) {
+        for(int &i:ans)
+            cout<<i<<endl;
+    } else {
+        cout<<"Connected"<<endl;
+    }
 }

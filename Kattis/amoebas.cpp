@@ -28,65 +28,47 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
-
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
+int N,M;
+bool bounds(int i, int j) {
+    return i >= 0 && i<N && j>=0 && j<M;
 }
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
-
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
-		}
-	}
-	return ans = 0;
-}
+int dx[8] = {-1,-1,0,1,1,1,0,-1};
+int dy[8] = {0,-1,-1,-1,0,1,1,1};
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+    cin>>N>>M;
+    cin.ignore();
+    vector<string> B(N);
+    vector<vector<bool>> V(N, vector<bool>(M,0));
+    for(string &s:B)
+        getline(cin,s);
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
+    int count = 0;
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<M; j++) {
+            if(!V[i][j] && B[i][j]=='#') {
+                count++;
+                
+                queue<pii> Q;
+                Q.push(make_pair(i,j));
+                V[i][j]=1;
+                while(!Q.empty()) {
+                    pii cur = Q.front();
+                    Q.pop();
 
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
-				}
-			}
-		}
+                    for(int k=0; k<8; k++) {
+                        int i2=cur.fst+dy[k];
+                        int j2=cur.snd+dx[k];
+                        if(bounds(i2,j2) && B[i2][j2]=='#' && !V[i2][j2]) {
+                            V[i2][j2]=1;
+                            Q.push(make_pair(i2,j2));
+                        }
+                    }
+                }
 
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
-	}
+            }
+        }
+    }
+    cout<<count<<endl;       
 }

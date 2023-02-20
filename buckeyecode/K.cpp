@@ -28,65 +28,80 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int N;
-map<string,int> ID;
-vector<vi> match;
-vi C;
-vi DP;
+vector<vi> G;
+vector<vi> visited;
 
-int getId(string s) {
-	if(ID.find(s) == ID.end())
-		ID[s] = ID.size();
-	return ID[s];
+int N;
+int dy[4] = {0,-1,0,1};
+int dx[4] = {-1,0,1,0};
+int DP[9*6][1001][1<<4];
+
+int getNode(int i, int j) {
+	return (6*i)+j;
 }
 
-int f(int mask, int pos) {
-//	bitset<15> b(mask);
-//	debug(b);
-	if(!mask) return 1;
-	int &ans = DP[mask];
-	if(ans != -1)
-		return ans;
+bool bounds(int i, int j) {
+	return i >= 0 && i < 9 && j >= 0 && j < 6;
+}
 
-	for(int i=pos; i<sz(C); ++i) {
-		if((mask & C[i]) == C[i]) {
-			if(f(mask-C[i], i+1))
-				return ans = 1;
+int visitedMask(int i, int j) {
+	int ret = 0;
+	for(int k=0; k<4; ++k) {
+		int i2 = i+dy[k];
+		int j2 = j+dx[k];
+		if(bounds(i2,j2) && visited[i2][j2])
+			ret |= 1<<k;
+	}
+	return ret;
+}
+
+int dfs(int n, int steps, int mask) {
+	if(DP[n][steps][mask] != -1) return DP[n][steps][mask];
+	if(steps == N) return DP[n][steps][mask] = 1;
+	int i = n/6;
+	int j = n%6;
+	ll ans = 0;
+	int v = 0;
+	for(int k=0; k<4; ++k) {
+		int i2 = i+dy[k];
+		int j2 = j+dx[k];
+		int n1 = getNode(i2,j2);
+		if(bounds(i2,j2) && !visited[i2][j2]) {
+			visited[i2][j2] = 1;
+			ans += dfs(n1, steps+1, visitedMask(i2,j2));
+			visited[i2][j2] = 0;
+			
 		}
 	}
-	return ans = 0;
+	return DP[n][steps][mask] = ans;
 }
 
 int main() {
-	while(cin>>N && N) {
-		match.clear();
-		match.resize(15, vi(15, 0));
-		DP.clear();
-		DP.resize(1<<15, -1);
-		ID.clear();
+	cin>>N;
+	visited.resize(9, vi(6, 0));
+	G.resize(9*6);
+	for(int i=0; i<9*6; ++i)
+		for(int j=0; j<1<<4; ++j)
+			for(int k=0; k<1001; ++k)
+				DP[i][k][j] = -1;
 
-		for(int i=0; i<N; ++i) {
-			string s1,s2; cin>>s1>>s2;
-			int i1=getId(s1);
-			int i2=getId(s2);
-			match[i1][i2] = 1;
-			match[i2][i1] = 1;
-		}
-		int n = ID.size();
-
-		C.clear();
-		for(int i=0; i<n; ++i) {
-			for(int j=i+1; j<n; ++j) {
-				for(int k=j+1; k<n; ++k) {
-					if(match[i][j] && match[j][k] && match[i][k])
-						C.push_back((1<<i)|(1<<j)|(1<<k));			
+	for(int i=0; i<9; ++i) {
+		for(int j=0; j<6; ++j) {
+			for(int k=0; k<4; ++k) {
+				int i2 = i+dy[k];
+				int j2 = j+dx[k];
+				if(bounds(i2,j2)) {
+					int n1 = getNode(i,j);
+					int n2 = getNode(i2,j2);
+					G[n1].push_back(n2);
+					G[n2].push_back(n1);
 				}
 			}
 		}
-
-		if(f((1<<n)-1, 0))
-			cout<<"possible"<<endl;
-		else
-			cout<<"impossible"<<endl;
 	}
+
+	visited[0][0] = 1;
+	ll ans = dfs(0, 0, 0);
+
+	cout<<ans<<endl;
 }

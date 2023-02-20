@@ -1,11 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
+int row[8];
+int col[8];
+int diagL[17];
+int diagR[17];
 
 int main() {
-    int row[8] = {0};
-    int col[8] = {0};
-    int diagL[17] = {0};
-    int diagR[17] = {0};
 
     int count = 0;
     bool flag = true;

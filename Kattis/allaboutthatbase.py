@@ -1,54 +1,50 @@
-def convert(i):
-    if i < 10:
-        return str(i)
-    if i == 36:
-        return "0"
-    return str(chr(97 + (i-10)))
+N = int(input())
 
-t = int(input())
-for _ in range(t):
+def check(a,b,c,op):
+    if op == "+":
+        if a+b == c:
+            return True
+    if op == "-":
+        if a-b == c:
+            return True
+    if op == "*":
+        if a*b == c:
+            return True
+    if op == "/":
+        if a/b == c:
+            return True
+    return False
 
-    left, op, right, eq, ans = input().split()
-    
-    finalAns = ""
 
-    lChar = 0
-    rChar = 0
-    aChar = 0
-    for s in left:
-        lChar = max(lChar, int(s, 36))
+for _ in range(N):
+    ans = []
+    lhs,op,rhs,c,eq = input().split()
 
-    for s in right:
-        rChar = max(rChar, int(s, 36))
-
-    for s in ans:
-        aChar = max(aChar, int(s, 36))
-
-    x = max(lChar, rChar, aChar)
-
-    if x == 1:
-        if op == '+' and len(left) + len(right) == len(ans):
-            finalAns = finalAns + "1"
-        if op == '-' and len(left) - len(right) == len(ans):
-            finalAns = finalAns + "1"
-        if op == '/' and len(left) / len(right) == len(ans):
-            finalAns = finalAns + "1"
-        if op == '*' and len(left) * len(right) == len(ans):
-            finalAns = finalAns + "1"
-
-    i = x+1
-    while i <= 36:
-        if op == '+' and int(left, i) + int(right, i) == int(ans, i):
-            finalAns = finalAns + convert(i)
-        if op == '-' and int(left, i) - int(right, i) == int(ans, i):
-            finalAns = finalAns + convert(i)
-        if op == '/' and int(left, i) / int(right, i) == int(ans, i):
-            finalAns = finalAns + convert(i)
-        if op == '*' and int(left, i) * int(right, i) == int(ans, i):
-            finalAns = finalAns + convert(i)
-        i = i + 1
-
-    if finalAns == "":
-        print("invalid")
+    X = max(max(lhs), max(rhs), max(eq))
+    if X.isdigit():
+        minBase = ord(X)-ord('0')+1
     else:
-        print(finalAns)
+        minBase = ord(X)-ord('a')+11
+
+    if minBase == 2:
+        if lhs.find('0') == -1 and rhs.find('0') == -1 and eq.find('0') == -1:
+            if check(len(lhs),len(rhs),len(eq),op):
+                ans.append(1)
+
+    for i in range(minBase, 37):
+        a = int(lhs, i)
+        b = int(rhs, i)
+        c = int(eq, i)
+        if check(a,b,c,op):
+            ans.append(i)
+
+    s = ""
+    for i in ans:
+        if i == 36:
+            s += '0'
+        elif i > 9:
+            s += chr(ord('a')+i-10)
+        else:
+            s += str(i)
+
+    print(s if len(s) else "invalid")
