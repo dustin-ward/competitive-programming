@@ -28,27 +28,39 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int main() {
+int N;
+int dp[4][8][300001];
+vi A;
 
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
+int f(int tool, int belt, int pos) {
+    if(pos==N) return 0;
+    int &ans = dp[tool][belt][pos];
+    if(ans!=-1) return ans;
 
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
+    ans = f(tool,belt,pos+1);
 
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
-        }
+    if(tool>0 && A[pos]==tool-1)
+        ans = max(ans, f(tool,belt,pos+1)+1);
+    
+    for(int i=0; i<3; i++) {
+        if(belt & (1<<i))
+            ans = max(ans, f(i+1,belt&~(1<<i),pos));
     }
+
+    return ans;
+}
+
+int main() {
+    for(int i=0; i<4; i++)
+        for(int j=0; j<8; j++)
+            for(int k=0; k<300001; k++)
+                dp[i][j][k]=-1;
+
+    cin>>N;
+    A.resize(N);
+    for(int &i:A)
+        cin>>i;
+
+    cout<<f(0,7,0)<<endl;
+
 }

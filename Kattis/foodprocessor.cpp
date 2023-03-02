@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <queue>
 using namespace std;
 
 typedef long long ll;
@@ -28,27 +29,42 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+double f(double t, double s, double h) {
+    return (h * log(t/s)) / (log(2));
+}
+
 int main() {
+    int S,T,N; cin>>S>>T>>N;
 
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
-
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
-        }
+    priority_queue<pii> pq;
+    for(int i=0; i<N; i++) {
+        int m,h; cin>>m>>h;
+        pq.emplace(m,h);
     }
+
+    if(pq.top().fst < S) {
+        cout<<-1<<endl;
+        return 0;
+    }
+
+    double ans = 0.0;
+    int b = pq.top().snd;
+    pii cur;
+    while(S!=T) {
+        cur = pq.top();
+        b = min(b, cur.snd);
+        pq.pop();
+
+        while(!pq.empty() && pq.top().fst >= S) {
+            cur = pq.top();
+            b = min(b, cur.snd);
+            pq.pop();
+        }
+
+        int t = pq.empty()?T:max(T,pq.top().fst);
+        ans += f(t, S, b);
+        S=t;
+    }
+
+    cout<<scientific<<setprecision(20)<<-ans<<endl;
 }

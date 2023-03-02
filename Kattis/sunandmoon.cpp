@@ -29,26 +29,28 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const unordered
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
 int main() {
+    int ds,ys,dm,ym;
+    cin>>ds>>ys>>dm>>ym;
 
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
+    vi M,S;
+    int m=-dm;
+    for(int i=0; i<5001; i++) {
+        m+=ym;
+        M.push_back(m);
+    }
+    int s=-ds;
+    for(int i=0; i<5001; i++) {
+        s+=ys;
+        S.push_back(s);
+    }
 
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
+    int pm=0,ps=0;
+    while(pm<5001&&ps<5001) {
+        if(S[ps]==M[pm]&&S[ps]>0&&M[pm]>0) {
+            cout<<S[ps]<<endl;
+            return 0;
         }
+        if(S[ps]<M[pm]) ps++;
+        else pm++;
     }
 }

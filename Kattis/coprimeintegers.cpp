@@ -28,27 +28,37 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int main() {
+const int MAX_N = 10000000;
+vi mu(MAX_N+1), p(MAX_N+1), s(MAX_N+1);
 
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
+void precomp() {
+    mu[1] = 1;
+    for(ll i=2; i<=MAX_N; i++) {
+        if(s[i])
+            mu[i] = 0;
+        else if(p[i])
+            mu[i] = (p[i]%2)?-1:1;
+        else
+            mu[i] = -1;
 
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
-        }
+        if(p[i]) continue;
+        for(ll j=2*i; j<=MAX_N; j+=i)
+            p[j]++;
+        for(ll j=i*i; j<=MAX_N; j+=i*i)
+            s[j] = 1;
     }
+}
+    
+ll f(ll x, ll y) {
+    ll sum = 0;
+    for(ll d = 1; d <= min(x,y); d++)
+        sum += mu[d] * (x/d) * (y/d);
+    return sum;
+}
+
+int main() {
+    precomp();
+    int a,b,c,d;
+    cin>>a>>b>>c>>d;
+    cout<<f(b,d) - f(a-1,d) - f(b,c-1) + f(a-1,c-1)<<endl;
 }

@@ -28,27 +28,39 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+const int seive_size = 40001;
+bitset<seive_size> b;
+vi p;
+void seive() {
+    b.set();
+    b[0] = b[1] = 0;
+    for(int i=2; i<seive_size; i++) if(b[i]) {
+        for(int j=i*i; j<seive_size; j+=i)
+            b[j] = 0;
+        p.push_back(i);
+    }
+}
+
+bool isPrime(int x) {
+    if(x < seive_size) return b[x];
+
+    for(int i=0; i<sz(p) && p[i]*p[i]<=x; i++) {
+        if(x%p[i] == 0)
+            return false;
+    }
+    return true;
+}
+
 int main() {
-
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
-
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
-        }
+    seive();
+    int x;
+    while(cin>>x && x) {
+        int x2 = 2*x;
+        while(!isPrime(x2)) x2++;
+        cout<<x2<<" ";
+        if(!isPrime(x))
+            cout<<"("<<x<<" is not prime)"<<endl;
+        else
+            cout<<endl;
     }
 }

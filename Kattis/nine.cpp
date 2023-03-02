@@ -28,27 +28,30 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
+const ll MOD = 1E9+7;
+
+ll fast_exp(ll b, ll n)
+{
+  ll res = 1;
+  ll x = b;
+
+  while (n > 0) {
+    if (n & 0x01) {
+      n--;
+      res = (res * x) % MOD;
+    } else {
+      n >>= 1;
+      x = (x*x) % MOD;
+    }
+  }
+
+  return res;
+}
+
 int main() {
-
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
-
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
-        }
+    int T; cin>>T;
+    while(T--) {
+        ll N; cin>>N;
+        cout<<(8 * fast_exp(9,N-1))%MOD<<endl;
     }
 }

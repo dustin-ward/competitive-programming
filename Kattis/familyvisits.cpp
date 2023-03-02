@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <queue>
 using namespace std;
 
 typedef long long ll;
@@ -28,27 +29,40 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-int main() {
+int ans=0;
+vpii A;
+bool possible = true;
 
-    int Q; cin>>Q;
-    while(Q--) {
-        ll K; cin>>K;
-        vi kPos(K,-1);
-
-        int f0 = 1, f1 = 1, f2 = 2;
-        for(int i=2;;++i) {
-            f2 = (f0%K + f1%K)%K;
-
-            if(kPos[f2] != -1) {
-                cout<<kPos[f2]<<endl;
-                break;
-            }
-            else {
-                kPos[f2] = i;
-            }
-
-            f0 = f1;
-            f1 = f2;
+void f(int start, int end) {
+    int t=0;
+    priority_queue<int> pq;
+    for(int i=end-1; i>=start; i--) {
+        t += A[i].fst;
+        if(A[i].snd) pq.push(A[i].snd);
+        while(!pq.empty() && t > 0) {
+            t -= pq.top();
+            ans++;
+            pq.pop();
         }
+        if(t > 0) possible = false;
     }
+
+}
+
+int main() {
+    int N,D; cin>>N>>D;
+    A.resize(N);
+    for(pii &p:A)
+        cin>>p.fst>>p.snd;
+
+    int cur=0;
+    while(D--) {
+        int v; cin>>v;
+        f(cur,v);
+        cur=v;
+    }
+    if(possible)
+        cout<<ans<<endl; 
+    else
+        cout<<-1<<endl;
 }
