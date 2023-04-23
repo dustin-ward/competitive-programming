@@ -1,4 +1,5 @@
 #include <bits/stdc++.h>
+#include <queue>
 using namespace std;
 
 typedef long long ll;
@@ -28,46 +29,52 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
-
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
-
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
-
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
-}
-
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
-    }
+    int T; cin>>T;
+    while(T--) {
+        int N,K; cin>>N>>K;
+        vector<ll> X(N);
+        priority_queue<ll> pos,neg;
+        for(int i=0; i<N; i++) {
+            ll temp; cin>>temp;
+            if(temp>0) pos.push(-temp);
+            else neg.push(temp);
+        }
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+        ll ans=0;
+        ll last;
+        while(!pos.empty() && sz(pos)>=K) {
+            for(int i=0; i<K-1; i++) pos.pop();
+            last = 2 * -pos.top(); pos.pop();
+            debug(last);
+            ans += last;
+        }
+        bool flag = false;
+        while(!pos.empty()) {
+            last = -pos.top(); pos.pop();
+            flag = true;
+        }
+        if(flag) {
+            debug(last);
+            ans += 2 * last;
+        }
+
+        while(!neg.empty() && sz(neg)>=K) {
+            for(int i=0; i<K-1; i++) neg.pop();
+            last = 2 * -neg.top(); neg.pop();
+            ans += last;
+        }
+        flag = false;
+        while(!neg.empty()) {
+            last = -neg.top(); neg.pop();
+            flag=true;
+        }
+        if(flag) {
+            debug(last);
+            ans += 2 * last;
+        }
+
+        if(pos.empty() && neg.empty()) ans -= last/2;
+        cout<<ans<<endl;
+    }
 }

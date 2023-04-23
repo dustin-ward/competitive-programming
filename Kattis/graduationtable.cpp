@@ -28,46 +28,96 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+class UnionFind
+{
+      struct UF { int p; int rank; };
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
+   public:
+      UnionFind(int n) {          // constructor
+	 howMany = n;
+	 uf = new UF[howMany];
+     size = new int[howMany];
+	 for (int i = 0; i < howMany; i++) {
+	    uf[i].p = i;
+	    uf[i].rank = 0;
+        size[i] = 1;
+	 }
+      }
 
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
+      ~UnionFind() {
+         delete[] uf;
+         delete[] size;
+      }
 
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
-}
+      int find(int x) { return find(uf,x); }        // for client use
+      
+      bool merge(int x, int y) {
+	 int res1, res2;
+	 res1 = find(uf, x);
+	 res2 = find(uf, y);
+	 if (res1 != res2) {
+	    if (uf[res1].rank > uf[res2].rank) {
+	       uf[res2].p = res1;
+           size[res1] += size[res2];
+	    }
+	    else {
+	       uf[res1].p = res2;
+           size[res2] += size[res1];
+	       if (uf[res1].rank == uf[res2].rank) {
+		  uf[res2].rank++;
+	       }
+	    }
+	    return true;
+	 }
+	 return false;
+      }
+      
+      int* size;
+   private:
+      int howMany;
+      UF* uf;
+
+      int find(UF uf[], int x) {     // recursive funcion for internal use
+	 if (uf[x].p != x) {
+	    uf[x].p = find(uf, uf[x].p);
+	 }
+	 return uf[x].p;
+      }
+};
+
+struct Edge {
+    int u;
+    int v;
+    ll w;
+
+    bool operator<(const Edge &e) {
+        return w<e.w;
+    }
+};
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
+    int N,M; cin>>N>>M;
+    vector<Edge> E(M);
+    for(Edge &e:E) {
+        cin>>e.u>>e.v>>e.w;
+        e.u--;
+        e.v--;
     }
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    sort(rall(E));
+
+    UnionFind uf(N);
+    ll ans = 0;
+    for(Edge &e:E) {
+        if(uf.find(e.u)==uf.find(e.v)) {
+            if(uf.size[uf.find(e.u)]==N) {
+                ans += e.w;
+                uf.merge(e.u,e.v);
+            }
+        } else {
+            ans += e.w;
+            uf.merge(e.u,e.v);
+        }
+    }
+    cout<<ans<<endl;
 }

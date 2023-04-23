@@ -28,46 +28,62 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+int N,F;
+vector<vi> B;
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
+int dy[4] = {0,-1,0,1};
+int dx[4] = {-1,0,1,0};
 
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
+bool bounds(int i, int j) {
+    return i>=0 && i<N && j>=0 && j<N;
+}
 
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+int DP[21][21][401];
+
+vector<vi> V;
+int dfs(int i, int j, int f) {
+    int &ans = DP[i][j][f];
+    if(ans != -1) return ans;
+    // debug(make_pair(i,j));
+    ans = B[i][j];
+    V[i][j] = 1;
+
+    if(f) {
+        int temp = 0;
+        for(int k=0; k<4; k++) {
+            int i2 = i+dy[k];
+            int j2 = j+dx[k];
+            if(bounds(i2,j2) && !V[i2][j2] && B[i2][j2] > B[i][j]) {
+                temp = max(temp, dfs(i2,j2,f-1));
+            }
+        }
+        ans += temp;
+    }
+    // debug(ans);
+    V[i][j] = 0;
+    return ans;
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
-    }
+    for(int i=0; i<21; i++)
+        for(int j=0; j<21; j++)
+            for(int k=0; k<401; k++)
+                DP[i][j][k] = -1;
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    cin>>N>>F;
+    B.resize(N,vi(N));
+    for(int i=0; i<N; i++)
+        for(int j=0; j<N; j++)
+            cin>>B[i][j];
+
+    int ans = 0;
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<N; j+=(i==0||i==N-1)?1:N-1) {
+            V.clear();
+            V.resize(N,vi(N,0));
+            // debug("NEW DFS");
+            ans = max(ans, dfs(i,j,F));
+        }
+    }
+    cout<<ans<<endl;
 }

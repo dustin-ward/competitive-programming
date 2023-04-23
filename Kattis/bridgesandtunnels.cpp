@@ -28,46 +28,36 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
-
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
-
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
-
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
+struct UF {
+	vi e;
+	UF(int n) : e(n, -1) {}
+	bool sameSet(int a, int b) { return find(a) == find(b); }
+	int size(int x) { return -e[find(x)]; }
+	int find(int x) { return e[x] < 0 ? x : e[x] = find(e[x]); }
+	bool join(int a, int b) {
+		a = find(a), b = find(b);
+		if (a == b) return false;
+		if (e[a] > e[b]) swap(a, b);
+		e[a] += e[b]; e[b] = a;
+		return true;
 	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+};
+
+map<string,int> M;
+int getId(string s) {
+    if(!M.count(s))
+        M[s] = sz(M);
+    return M[s];
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
+    int N; cin>>N;
+    UF uf(N*2);
+    while(N--) {
+        string a, b; cin>>a>>b;
+        int u = getId(a);
+        int v = getId(b);
+        uf.join(u,v);
+        cout<<uf.size(u)<<endl;
     }
-
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
 }

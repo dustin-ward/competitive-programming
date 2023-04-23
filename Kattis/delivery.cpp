@@ -28,46 +28,35 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+int N,K;
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
-
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
-
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+int f(vpii &V) {
+    int dis = V[sz(V)-1].fst * 2;
+    int L = K;
+    for(int i=sz(V)-1; i>=0; i--) {
+        if(L >= V[i].snd) {
+            L -= V[i].snd;
+            V.pop_back();
+        } else {
+            V[i].snd -= L;
+            break;
+        }
+    }
+    return dis;
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
+    cin>>N>>K;
+    vpii pos,neg;
+    for(int i=0; i<N; i++) {
+        int x,t; cin>>x>>t;
+        if(x<0) neg.emplace_back(-x,t);
+        else pos.emplace_back(x,t);
     }
-
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    sort(all(pos));
+    sort(all(neg));
+    int ans = 0;
+    while(sz(pos)) ans += f(pos);
+    while(sz(neg)) ans += f(neg);
+    cout<<ans<<endl;
 }

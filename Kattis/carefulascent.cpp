@@ -28,46 +28,67 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+struct Shield {
+    int l;
+    int u;
+    double f;
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
+    bool operator<(const Shield &s) {
+        return l < s.l;
+    }
+};
 
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
+int X,Y,N;
+vector<Shield> S;
+bool negative = false;
 
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+bool f(double h) {
+    double hPos = 0.0;
+    double vPos = 0.0;
+
+    for(Shield &s:S) {
+        // Get to bottom of shield
+        double dy = s.l - vPos;
+        hPos += dy * h;
+        vPos = s.l;
+
+        // Go through shield;
+        dy = s.u - s.l;
+        hPos += dy * s.f * h;
+        vPos = s.u;
+    }
+
+    // Get to ship
+    double dy = Y - vPos;
+    hPos += dy * h;
+
+    return hPos > X;
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
+    cin>>X>>Y>>N;
+    if(X<0) {
+        negative = 1;
+        X = -X;
     }
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    S.resize(N);
+    for(Shield &s:S)
+        cin>>s.l>>s.u>>s.f;
+
+    sort(all(S));
+
+    double upperBound = 1.0;
+    while(!f(upperBound)) upperBound *= 2;
+
+    double lo=0.0, hi=upperBound;
+    while((hi-lo)>0.000000001) {
+        double mid = (lo+hi)/2;
+        if(f(mid))
+            hi = mid;
+        else
+            lo = mid;
+    }
+    
+    cout<<fixed<<setprecision(10)<<(negative?-lo:lo)<<endl;
 }

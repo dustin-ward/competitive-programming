@@ -28,46 +28,42 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+int N;
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
-
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
-
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+bool f(vi &v, int w) {
+    int curW = 0;
+    for(int i=0; i<sz(v); i++) {
+        if(v[i] < w) continue;
+        if(v[i] == curW) curW = 0;
+        else if(curW) return false;
+        else curW = v[i];
+    }
+    return true;
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
-    for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
-    }
+    cin>>N;
+    vi top(N),bottom(N);
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    map<int,int> freq;
+    for(int &i:top) {
+        cin>>i;
+        freq[i]++;    
+    }
+    for(int &i:bottom)
+        cin>>i;
+
+    int lo=0,hi=1000000001;
+    for(pii p:freq)
+        if(p.snd==1)
+            lo = max(lo,p.fst);
+
+    while(hi-lo>1) {
+        int mid = (lo+hi)/2;
+        if(f(top,mid) && f(bottom,mid))
+            hi = mid;
+        else
+            lo = mid;
+    }
+    cout<<lo<<endl;
 }

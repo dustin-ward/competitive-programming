@@ -28,46 +28,106 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-ll W;
+struct Edge {
+  int to;
+  int weight;       // can be double or other numeric type
+  Edge(int t, int w)
+    : to(t), weight(w) { }
+};
+  
+typedef vector<Edge>::iterator EdgeIter;
 
-const ll inf = LLONG_MAX;
-struct Ed { int a, b, w, s() {return a < b ? a : -a; }};
-struct Node { ll dist = inf; int prev = -1; };
+struct Graph {
+  vector<Edge> *nbr;
+  int num_nodes;
+  Graph(int n)
+    : num_nodes(n)
+  {
+    nbr = new vector<Edge>[num_nodes];
+  }
 
-void bellmanFord(vector<Node>& nodes, vector<Ed>& eds, int s) {
-	nodes[s].dist = 0;
-	sort(all(eds), [](Ed a, Ed b) { return a.s() < b.s(); });
+  ~Graph()
+  {
+    delete[] nbr;
+  }
 
-    // int lim = sz(nodes) / 2 + 2;
-	int lim = 200102;
-	for(int i=0; i<lim; i++) for (Ed ed : eds) {
-		Node cur = nodes[ed.a], &dest = nodes[ed.b];
-		if (abs(cur.dist) == inf) continue;
-		// ll d = cur.dist + ed.w;
-		ll d = max(cur.dist + ed.w, -W);
-		if (d < dest.dist) {
-			dest.prev = ed.a;
-			// dest.dist = (i < lim-1 ? d : -inf);
-            dest.dist = d;
-		}
-	}
-//	for(int i=0; i<lim; i++) for (Ed e : eds) {
-//		if (nodes[e.a].dist == -inf)
-//			nodes[e.b].dist = -inf;
-//	}
+  // note: There is no check on duplicate edge, so it is possible to
+  // add multiple edges between two vertices
+  //
+  // If this is an undirected graph, be sure to add an edge both
+  // ways
+  void add_edge(int u, int v, int weight)
+  {
+    nbr[u].push_back(Edge(v, weight));
+  }
+};
+
+/* assume that D and P have been allocated */
+void dijkstra(const Graph &G, int src, vector<int> &D, vector<int> &P)
+{
+  typedef pair<int,int> pii;
+
+  int n = G.num_nodes;
+  vector<bool> used(n, false);
+  priority_queue<pii, vector<pii>,  greater<pii> > fringe;
+
+  D.resize(n);
+  P.resize(n);
+  fill(D.begin(), D.end(), -1);
+  fill(P.begin(), P.end(), -1);
+
+  D[src] = 0;
+  fringe.push(make_pair(D[src], src));
+
+  while (!fringe.empty()) {
+    pii next = fringe.top();
+    fringe.pop();
+    int u = next.second;
+    if (used[u]) continue;
+    used[u] = true;
+
+    for (EdgeIter it = G.nbr[u].begin(); it != G.nbr[u].end(); ++it) {
+      int v = it->to;
+      int weight = it->weight + next.first;
+      if (used[v]) continue;
+      if (D[v] == -1 || weight < D[v]) {
+	D[v] = weight;
+	P[v] = u;
+	fringe.push(make_pair(D[v], v));
+      }
+    }
+  }
+}
+
+int get_path(int v, const vector<int> &P, vector<int> &path)
+{
+  path.clear();
+  path.push_back(v);
+  while (P[v] != -1) {
+    v = P[v];
+    path.push_back(v);
+  }
+  reverse(path.begin(), path.end());
+  return path.size();
 }
 
 int main() {
-    int N,M; cin>>N>>M>>W;
-    vector<Ed> eds(M);
-    vector<Node> nodes(N);
+    int N,M; cin>>N>>M;
+    int A,B; cin>>A>>B;
+    Graph G(N);
+    
     for(int i=0; i<M; i++) {
-        int u,v,w; cin>>u>>v>>w;
-        eds[i].a = u-1;
-        eds[i].b = v-1;
-        eds[i].w = -w;
+        int u,v; cin>>u>>v;
+        G.add_edge(u,v,1);
+        G.add_edge(v,u,1);
     }
 
-    bellmanFord(nodes, eds, 0);
-    cout<<-nodes[N-1].dist<<endl;
+    vi DA,PA;
+    dijkstra(G, A, DA, PA);
+    
+    if(DA[B]%2) {
+        cout<<(DA[B]/2)+1<<endl;
+    } else {
+        cout<<DA[B]/2<<endl;
+    }
 }
