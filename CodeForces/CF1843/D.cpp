@@ -32,11 +32,13 @@ int N;
 vector<vi> G;
 vector<ll> S;
 
-ll sizeOfTree(int n) {
+ll sizeOfTree(int n, int p) {
 	ll sum = 0;
-	for(int &i:G[n])
-		sum += sizeOfTree(i);
-	if(!sum) sum = 1;
+	if(sz(G[n])==1 && G[n][0]==p) sum = 1;
+	else
+		for(int &i:G[n])
+			if(i!=p)
+				sum += sizeOfTree(i,n);
 	S[n] = sum;
 	return sum;
 }
@@ -53,10 +55,11 @@ int main() {
 		for(int i=0; i<N-1; i++) {
 			int u,v; cin>>u>>v;
 			u--; v--;
-			G[min(u,v)].push_back(max(u,v));
+			G[u].push_back(v);
+			G[v].push_back(u);
 		}
 
-		debug(sizeOfTree(0));
+		debug(sizeOfTree(0,-1));
 		debug(S);
 
 		int Q; cin>>Q;
