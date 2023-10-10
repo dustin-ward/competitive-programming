@@ -16,3 +16,5 @@ Library/
 a.out
 in.txt
 out.txt
+*.txt
+*.zip
