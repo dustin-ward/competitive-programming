@@ -28,69 +28,24 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-const ll KEY = 811589153;
+typedef unsigned int uint
+uint STATE_WIN = 0b11111111101010100101010100000000;
+unordered_map<uint,int> forwards,backwards;
 
-void printQ(deque<pair<ll,ll>> Q) {
-    cout<<"QUEUE==="<<endl;
-    while(!Q.empty()) {
-        cout<<"\t"<<Q.front()<<endl;
-        Q.pop_front();
-    }
-    cout<<"==="<<endl;
+int get(uint state, int i, int j) {
+    return (state >> (8*i + j*2)) & 0b111;
+}
+
+int set(uint state, int i, int j, int val) {
+    
 }
 
 int main() {
-    deque<pair<ll,ll>> Q;
+    uint start;
+    for(int i=0; i<4; i++) {
+        for(int j=0; j<4; j++) {
+            char c; cin>>c;
 
-    int x;
-    int N = 0;
-    while(cin>>x)
-        Q.emplace_back(N++, x*KEY);
-
-//    printQ(Q);
-    for(int k=0; k<10; ++k) {
-        for(int i=0; i<N; ++i) {
-            while(Q.front().fst != i) {
-                pair<ll,ll> temp = Q.front();
-                Q.pop_front();
-                Q.push_back(temp);
-            }
-
-            ll dist = Q.front().snd;
-            ll cp = abs(dist) % (sz(Q)-1);
-            pair<ll,ll> temp = Q.front(); Q.pop_front();
-            while(cp--) {
-                if(dist > 0) {
-                    pair<ll,ll> temp = Q.front();
-                    Q.pop_front();
-                    Q.push_back(temp);
-                }
-                else {
-                    pair<ll,ll> temp = Q.back();
-                    Q.pop_back();
-                    Q.push_front(temp);
-                }
-            }
-            Q.push_front(temp);
-    //        printQ(Q);
         }
     }
-
-    while(Q.front().snd != 0) {
-        pair<ll,ll> temp = Q.front();
-        Q.pop_front();
-        Q.push_back(temp);
-    }
-
-    ll ans = 0;
-    for(int i=0; i<3; ++i) {
-        for(int j=0; j<1000; ++j) {
-            pair<ll,ll> temp = Q.front();
-            Q.pop_front();
-            Q.push_back(temp);
-        }
-        debug(Q.front());
-        ans += Q.front().snd;
-    }
-    cout<<ans<<endl;
 }

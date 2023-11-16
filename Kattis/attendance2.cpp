@@ -28,69 +28,23 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-const ll KEY = 811589153;
-
-void printQ(deque<pair<ll,ll>> Q) {
-    cout<<"QUEUE==="<<endl;
-    while(!Q.empty()) {
-        cout<<"\t"<<Q.front()<<endl;
-        Q.pop_front();
-    }
-    cout<<"==="<<endl;
-}
-
 int main() {
-    deque<pair<ll,ll>> Q;
+    int N; cin>>N;
+    vector<string> C(N), ab;
+    for(string &s:C)
+        cin>>s;
 
-    int x;
-    int N = 0;
-    while(cin>>x)
-        Q.emplace_back(N++, x*KEY);
-
-//    printQ(Q);
-    for(int k=0; k<10; ++k) {
-        for(int i=0; i<N; ++i) {
-            while(Q.front().fst != i) {
-                pair<ll,ll> temp = Q.front();
-                Q.pop_front();
-                Q.push_back(temp);
-            }
-
-            ll dist = Q.front().snd;
-            ll cp = abs(dist) % (sz(Q)-1);
-            pair<ll,ll> temp = Q.front(); Q.pop_front();
-            while(cp--) {
-                if(dist > 0) {
-                    pair<ll,ll> temp = Q.front();
-                    Q.pop_front();
-                    Q.push_back(temp);
-                }
-                else {
-                    pair<ll,ll> temp = Q.back();
-                    Q.pop_back();
-                    Q.push_front(temp);
-                }
-            }
-            Q.push_front(temp);
-    //        printQ(Q);
-        }
+    for(int i=0; i<N-1; i++) {
+        if(C[i] == "Present!") continue;
+        if(C[i+1] != "Present!")
+            ab.push_back(C[i]);
     }
+    if(C[N-1] != "Present!")
+        ab.push_back(C[N-1]);
 
-    while(Q.front().snd != 0) {
-        pair<ll,ll> temp = Q.front();
-        Q.pop_front();
-        Q.push_back(temp);
-    }
-
-    ll ans = 0;
-    for(int i=0; i<3; ++i) {
-        for(int j=0; j<1000; ++j) {
-            pair<ll,ll> temp = Q.front();
-            Q.pop_front();
-            Q.push_back(temp);
-        }
-        debug(Q.front());
-        ans += Q.front().snd;
-    }
-    cout<<ans<<endl;
+    if(sz(ab))
+        for(string name:ab)
+            cout<<name<<endl;
+    else
+        cout<<"No Absences"<<endl;
 }

@@ -69,7 +69,7 @@ int main() {
             }
         }
         Q.push_front(temp);
-//        printQ(Q);
+        printQ(Q);
     }
 
     while(Q.front().snd != 0) {

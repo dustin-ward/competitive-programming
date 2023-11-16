@@ -28,69 +28,48 @@ template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
 
-const ll KEY = 811589153;
-
-void printQ(deque<pair<ll,ll>> Q) {
-    cout<<"QUEUE==="<<endl;
-    while(!Q.empty()) {
-        cout<<"\t"<<Q.front()<<endl;
-        Q.pop_front();
-    }
-    cout<<"==="<<endl;
-}
-
 int main() {
-    deque<pair<ll,ll>> Q;
-
-    int x;
-    int N = 0;
-    while(cin>>x)
-        Q.emplace_back(N++, x*KEY);
-
-//    printQ(Q);
-    for(int k=0; k<10; ++k) {
-        for(int i=0; i<N; ++i) {
-            while(Q.front().fst != i) {
-                pair<ll,ll> temp = Q.front();
-                Q.pop_front();
-                Q.push_back(temp);
-            }
-
-            ll dist = Q.front().snd;
-            ll cp = abs(dist) % (sz(Q)-1);
-            pair<ll,ll> temp = Q.front(); Q.pop_front();
-            while(cp--) {
-                if(dist > 0) {
-                    pair<ll,ll> temp = Q.front();
-                    Q.pop_front();
-                    Q.push_back(temp);
-                }
-                else {
-                    pair<ll,ll> temp = Q.back();
-                    Q.pop_back();
-                    Q.push_front(temp);
-                }
-            }
-            Q.push_front(temp);
-    //        printQ(Q);
+    int N,M,Q; cin>>N>>M>>Q;
+    vi C(N);
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<M; j++) {
+            char c; cin>>c;
+            if(c=='Y')
+                C[i] |= (1<<j);
         }
     }
 
-    while(Q.front().snd != 0) {
-        pair<ll,ll> temp = Q.front();
-        Q.pop_front();
-        Q.push_back(temp);
+    int q = 0;
+    int V = 0;
+    while(Q--) {
+        int i; cin>>i;
+        char c; cin>>c;
+        q |= (1<<(i-1));
+        if(c=='Y')
+            V |= (1<<(i-1));
     }
+    /* debug(V); */
+    /* debug(q); */
+    /* bitset<15> b2(V); */
+    /* bitset<15> b3(q); */
+    /* debug(b2); */
+    /* debug(b3); */
 
-    ll ans = 0;
-    for(int i=0; i<3; ++i) {
-        for(int j=0; j<1000; ++j) {
-            pair<ll,ll> temp = Q.front();
-            Q.pop_front();
-            Q.push_back(temp);
-        }
-        debug(Q.front());
-        ans += Q.front().snd;
+    vi ans;
+    for(int i=0; i<N; i++) {
+        /* bitset<15> b1(C[i]); */
+        /* debug(b1); */
+        /* bitset<15> b4(C[i]&q); */
+        /* debug(b4); */
+        if((C[i] & q) == V)
+            ans.push_back(i+1);
     }
-    cout<<ans<<endl;
+    if(sz(ans)>1) {
+        cout<<"ambiguous"<<endl;
+        cout<<sz(ans)<<endl;
+    }
+    else {
+        cout<<"unique"<<endl;
+        cout<<ans[0]<<endl;
+    }
 }
