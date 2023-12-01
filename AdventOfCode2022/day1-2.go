@@ -3,26 +3,31 @@ package main
 import (
 	"bufio"
 	"os"
+	"sort"
 	"strconv"
 )
 
 func main() {
 	reader := bufio.NewReader(os.Stdin)
-	ans := 0
 	sum := 0
+	E := make([]int, 0)
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
-			println("Ans:", ans)
-			return
+			E = append(E, -sum)
+			break
 		}
 
 		if line == "\n" {
-			ans = max(ans, sum)
+			E = append(E, -sum)
 			sum = 0
 		} else {
-            x, _ := strconv.Atoi(line[:len(line)-1])
+			x, _ := strconv.Atoi(line[:len(line)-1])
 			sum += x
 		}
 	}
+
+	sort.Ints(E)
+	ans := E[0] + E[1] + E[2]
+	println("Ans:", -ans)
 }
