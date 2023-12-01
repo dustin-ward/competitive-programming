@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-func isNum(s string) int {
+func strToNum(s string) int {
 	if strings.HasPrefix(s, "one") {
 		return 1
 	} else if strings.HasPrefix(s, "two") {
@@ -43,19 +43,15 @@ func main() {
 		first := -1
 		last := -1
 		for i, ch := range line {
-			if unicode.IsDigit(rune(ch)) || isNum(line[i:]) != 0 {
+			if unicode.IsDigit(rune(ch)) || strToNum(line[i:]) != 0 {
 				n := isNum(line[i:])
 				if n == 0 {
-					if first == -1 {
-						first = int(ch - rune('0'))
-					}
-					last = int(ch - rune('0'))
-				} else {
-					if first == -1 {
-						first = n
-					}
-					last = n
+					n = int(ch - rune('0'))
 				}
+				if first == -1 {
+					first = n
+				}
+				last = n
 			}
 		}
 		first *= 10
