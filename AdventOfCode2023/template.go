@@ -12,6 +12,7 @@ func main() {
 		if err != nil {
 			//EOF
 		}
+		line = line[:len(line)-1]
 
 		if line == "\n" {
 			// Blank Line
