@@ -1,0 +1,69 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+typedef long long ll;
+typedef pair<int, int> pii;
+typedef vector<pii> vpii;
+typedef vector<int> vi;
+
+#define INF 1000000000
+#define fst first
+#define snd second
+#define debug(a) cerr << #a << " = " << (a) << endl;
+#define sz(x) (int)(x).size()
+#define all(X) begin(X), end(X)
+#define rall(X) rbegin(X), rend(X)
+
+const double PI = acos(-1);
+double time() { return double(clock()) / CLOCKS_PER_SEC; }
+
+template<typename T, typename U> ostream& operator<<(ostream& o, const pair<T, U>& x) { o << "(" << x.fst << ", " << x.snd << ")"; return o; }
+template<typename T> ostream& operator<<(ostream& o, const vector<T>& x) { o << "["; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "]"; return o; }
+template<typename T> ostream& operator<<(ostream& o, const set<T>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T> ostream& operator<<(ostream& o, const multiset<T>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T> ostream& operator<<(ostream& o, const unordered_set<T>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T> ostream& operator<<(ostream& o, const unordered_multiset<T>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T, typename U> ostream& operator<<(ostream& o, const map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T, typename U> ostream& operator<<(ostream& o, const multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_map<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+template<typename T, typename U> ostream& operator<<(ostream& o, const unordered_multimap<T, U>& x) { o << "{"; int b = 0; for (auto& a : x) o << (b++ ? ", " : "") << a; o << "}"; return o; }
+
+int main() {
+    int N, P; cin>>N>>P;
+    vector<vpii> c(P, vpii(N));
+
+    for(int i=0; i<N; i++) {
+        for(int j=0; j<P; j++) {
+            int x; cin>>x;
+            c[j][i] = {x, i};
+        }
+    }
+    // debug(c);
+
+    set<string> ans;
+    for(int i=0; i<P; i++) {
+        sort(all(c[i]));
+        // debug(c[i]);
+        int last = -1;
+        string order = "";
+
+        bool early = false;
+        for(auto &[x,j] : c[i]) {
+            /* debug(order);
+            debug(x);
+            debug(last); */
+            if(x > last) {
+                last = x;
+                order += to_string(j)+",";
+            } else {
+                early = true;
+                break;
+            }
+        }
+        if(!early)
+            ans.insert(order);
+    }
+    // debug(ans);
+
+    cout<<sz(ans)<<endl;
+}
